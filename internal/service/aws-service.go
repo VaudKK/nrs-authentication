@@ -6,25 +6,33 @@ import (
 	"nrs-authentication/internal/config"
 	"nrs-authentication/internal/dto"
 
-	awsConfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider/types"
 	"github.com/sirupsen/logrus"
 )
 
+var client *cognitoidentityprovider.Client
+
 type AwsService interface {
 	AttachRole(dto.AttachRoleRequest) (dto.AttachRoleResponse, error)
+	GetFacilityUsers(string) ([]types.UserType, error)
 }
 
 type awsService struct {
-	Config *config.Config
-	Log    *logrus.Logger
+	Config    *config.Config
+	AwsConfig aws.Config
+	Log       *logrus.Logger
 }
 
-func NewAwsService(config *config.Config, log *logrus.Logger) AwsService {
+func NewAwsService(config *config.Config, log *logrus.Logger, awsConfig aws.Config) AwsService {
+
+	client = cognitoidentityprovider.NewFromConfig(awsConfig)
+
 	return &awsService{
-		Config: config,
-		Log:    log,
+		Config:    config,
+		Log:       log,
+		AwsConfig: awsConfig,
 	}
 }
 
@@ -32,20 +40,9 @@ func (s *awsService) AttachRole(request dto.AttachRoleRequest) (dto.AttachRoleRe
 
 	ctx := context.TODO()
 
-	cfg, err := awsConfig.LoadDefaultConfig(ctx)
-	if err != nil {
-		s.Log.WithError(err).Error("Unable  to load sdk config")
-		return dto.AttachRoleResponse{
-			Success: false,
-			Message: "Could not load configs",
-		}, err
-	}
-
-	client := cognitoidentityprovider.NewFromConfig(cfg)
-
 	userPoolId := s.Config.CognitoUserPoolId
 
-	_, err = client.AdminAddUserToGroup(ctx, &cognitoidentityprovider.AdminAddUserToGroupInput{
+	_, err := client.AdminAddUserToGroup(ctx, &cognitoidentityprovider.AdminAddUserToGroupInput{
 		UserPoolId: &userPoolId,
 		Username:   &request.Username,
 		GroupName:  &request.GroupName,
@@ -81,4 +78,33 @@ func (s *awsService) AttachRole(request dto.AttachRoleRequest) (dto.AttachRoleRe
 		Success: true,
 		Message: "Success",
 	}, nil
+}
+
+func (s *awsService) GetFacilityUsers(facilityId string) ([]types.UserType, error) {
+
+	ctx := context.TODO()
+
+	userPoolId := s.Config.CognitoUserPoolId
+
+	out, err := client.ListUsers(ctx, &cognitoidentityprovider.ListUsersInput{
+		UserPoolId:      &userPoolId,
+		AttributesToGet: []string{"custom:facility_id"},
+	})
+
+	if err != nil {
+		s.Log.WithError(err).Error("Error while fetching facility users")
+		return []types.UserType{}, nil
+	}
+
+	var users []types.UserType
+
+	for _, user := range out.Users {
+		for _, attr := range user.Attributes {
+			if *attr.Name == "custom:facility_id" && *attr.Value == facilityId {
+				users = append(users, user)
+			}
+		}
+	}
+
+	return users, nil
 }

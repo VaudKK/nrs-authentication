@@ -1,0 +1,168 @@
+basePath: /api/v1/auth/me
+definitions:
+  nrs-authentication_internal_dto.AttachRoleResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  types.AttributeType:
+    properties:
+      name:
+        description: |-
+          The name of the attribute, for example email or custom:department .
+
+          In some older user pools, the regex pattern for acceptable values of this
+          parameter is [\p{L}\p{M}\p{S}\p{N}\p{P}]+ . Older pools will eventually be
+          updated to use the new pattern. Affected user pools are those created before May
+          2024 in US East (N. Virginia), US East (Ohio), US West (N. California), US West
+          (Oregon), Asia Pacific (Mumbai), Asia Pacific (Tokyo), Asia Pacific (Seoul),
+          Asia Pacific (Singapore), Asia Pacific (Sydney), Canada (Central), Europe
+          (Frankfurt), Europe (Ireland), Europe (London), Europe (Paris), Europe
+          (Stockholm), Middle East (Bahrain), and South America (São Paulo).
+
+          This member is required.
+        type: string
+      value:
+        description: The value of the attribute.
+        type: string
+    type: object
+  types.DeliveryMediumType:
+    enum:
+    - SMS
+    - EMAIL
+    type: string
+    x-enum-varnames:
+    - DeliveryMediumTypeSms
+    - DeliveryMediumTypeEmail
+  types.MFAOptionType:
+    properties:
+      attributeName:
+        description: The attribute name of the MFA option type. The only valid value
+          is phone_number .
+        type: string
+      deliveryMedium:
+        allOf:
+        - $ref: '#/definitions/types.DeliveryMediumType'
+        description: |-
+          The delivery medium to send the MFA code. You can use this parameter to set
+          only the SMS delivery medium value.
+    type: object
+  types.UserStatusType:
+    enum:
+    - UNCONFIRMED
+    - CONFIRMED
+    - ARCHIVED
+    - COMPROMISED
+    - UNKNOWN
+    - RESET_REQUIRED
+    - FORCE_CHANGE_PASSWORD
+    - EXTERNAL_PROVIDER
+    type: string
+    x-enum-varnames:
+    - UserStatusTypeUnconfirmed
+    - UserStatusTypeConfirmed
+    - UserStatusTypeArchived
+    - UserStatusTypeCompromised
+    - UserStatusTypeUnknown
+    - UserStatusTypeResetRequired
+    - UserStatusTypeForceChangePassword
+    - UserStatusTypeExternalProvider
+  types.UserType:
+    properties:
+      attributes:
+        description: Names and values of a user's attributes, for example email .
+        items:
+          $ref: '#/definitions/types.AttributeType'
+        type: array
+      enabled:
+        description: Indicates whether the user's account is enabled or disabled.
+        type: boolean
+      mfaoptions:
+        description: The user's MFA configuration.
+        items:
+          $ref: '#/definitions/types.MFAOptionType'
+        type: array
+      userCreateDate:
+        description: |-
+          The date and time when the item was created. Amazon Cognito returns this
+          timestamp in UNIX epoch time format. Your SDK might render the output in a
+          human-readable format like ISO 8601 or a Java Date object.
+        type: string
+      userLastModifiedDate:
+        description: |-
+          The date and time when the item was modified. Amazon Cognito returns this
+          timestamp in UNIX epoch time format. Your SDK might render the output in a
+          human-readable format like ISO 8601 or a Java Date object.
+        type: string
+      userStatus:
+        allOf:
+        - $ref: '#/definitions/types.UserStatusType'
+        description: |-
+          The user status. This can be one of the following:
+
+            - UNCONFIRMED : User has been created but not confirmed.
+
+            - CONFIRMED : User has been confirmed.
+
+            - EXTERNAL_PROVIDER : User signed in with a third-party IdP.
+
+            - RESET_REQUIRED : User is confirmed, but the user must request a code and
+            reset their password before they can sign in.
+
+            - FORCE_CHANGE_PASSWORD : The user is confirmed and the user can sign in using
+            a temporary password, but on first sign-in, the user must change their password
+            to a new value before doing anything else.
+
+          The statuses ARCHIVED , UNKNOWN , and COMPROMISED are no longer used.
+      username:
+        description: The user's username.
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Handles authentication utilities
+  title: nrs-authentication
+  version: "1.0"
+paths:
+  /attach-role:
+    post:
+      consumes:
+      - application/json
+      description: attaches a role to a user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
+      summary: Attach a role to a user
+      tags:
+      - roles
+  /get-facility-users:
+    get:
+      consumes:
+      - application/json
+      description: returns a list of facility users
+      parameters:
+      - description: facility_id
+        in: query
+        name: facility_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.UserType'
+            type: array
+      summary: Get users for a facility
+      tags:
+      - users
+swagger: "2.0"
