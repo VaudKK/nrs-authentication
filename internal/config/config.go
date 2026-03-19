@@ -16,11 +16,14 @@ type Config struct {
 }
 
 func LoadConfig(log *logrus.Logger) *Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.WithError(err).Error("Error while loading configs")
-		return nil
+	if os.Getenv("APP_ENV") == "development"{
+		err := godotenv.Load()
+		if err != nil {
+			log.WithError(err).Error("Error while loading configs")
+			return nil
+		}
 	}
+	
 
 	return &Config{
 		AwsAccessKey:       os.Getenv("AWS_ACCESS_KEY_ID"),
