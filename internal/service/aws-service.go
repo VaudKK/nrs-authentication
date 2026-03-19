@@ -106,5 +106,9 @@ func (s *awsService) GetFacilityUsers(facilityId string) ([]types.UserType, erro
 		}
 	}
 
+	if users == nil {
+		return []types.UserType{}, nil
+	}
+
 	return users, nil
 }
