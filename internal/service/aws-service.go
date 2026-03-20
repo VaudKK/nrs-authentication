@@ -16,7 +16,7 @@ var client *cognitoidentityprovider.Client
 
 type AwsService interface {
 	AttachRole(dto.AttachRoleRequest) (dto.AttachRoleResponse, error)
-	GetFacilityUsers(string,string) ([]types.UserType, error)
+	GetFacilityUsers(string, string) ([]types.UserType, error)
 }
 
 type awsService struct {
@@ -80,7 +80,7 @@ func (s *awsService) AttachRole(request dto.AttachRoleRequest) (dto.AttachRoleRe
 	}, nil
 }
 
-func (s *awsService) GetFacilityUsers(facilityCode,role string) ([]types.UserType, error) {
+func (s *awsService) GetFacilityUsers(facilityCode, role string) ([]types.UserType, error) {
 
 	ctx := context.TODO()
 
@@ -92,22 +92,20 @@ func (s *awsService) GetFacilityUsers(facilityCode,role string) ([]types.UserTyp
 
 	var users []types.UserType
 
+	switch role {
+	case "doctor":
+		out, err = getUsersByGroup("DOCTOR", userPoolId)
 
-	switch(role){
-		case "doctor":
-			out, err = getUsersByGroup("DOCTOR",userPoolId)
+	case "nurse":
+		out, err = getUsersByGroup("NURSE", userPoolId)
 
-		case "nurse":
-			out, err = getUsersByGroup("NURSE",userPoolId)
+	case "hospital_admin":
+		out, err = getUsersByGroup("HOSPITAL_ADMIN", userPoolId)
 
-		case "hospital_admin":
-			out, err = getUsersByGroup("HOSPITAL_ADMIN",userPoolId)
-
-		default:
-			outAll, err = client.ListUsers(ctx, &cognitoidentityprovider.ListUsersInput{
-				UserPoolId:      &userPoolId,
-				AttributesToGet: []string{"custom:facility_code","name"},
-			})
+	default:
+		outAll, err = client.ListUsers(ctx, &cognitoidentityprovider.ListUsersInput{
+			UserPoolId: &userPoolId,
+		})
 	}
 
 	if err != nil {
@@ -116,9 +114,9 @@ func (s *awsService) GetFacilityUsers(facilityCode,role string) ([]types.UserTyp
 	}
 
 	if role == "doctor" || role == "nurse" || role == "hospital_admin" {
-		users = filterAndAppendUsers(out.Users,facilityCode)
-	}else{
-		users = filterAndAppendUsers(outAll.Users,facilityCode)
+		users = filterAndAppendUsers(out.Users, facilityCode)
+	} else {
+		users = filterAndAppendUsers(outAll.Users, facilityCode)
 	}
 
 	if users == nil {
@@ -128,14 +126,13 @@ func (s *awsService) GetFacilityUsers(facilityCode,role string) ([]types.UserTyp
 	return users, nil
 }
 
-func getUsersByGroup(groupName,userPoolId string) (*cognitoidentityprovider.ListUsersInGroupOutput, error){
+func getUsersByGroup(groupName, userPoolId string) (*cognitoidentityprovider.ListUsersInGroupOutput, error) {
 	ctx := context.TODO()
-	 return client.ListUsersInGroup(ctx, &cognitoidentityprovider.ListUsersInGroupInput{
-				UserPoolId:      &userPoolId,
-				GroupName: &groupName,
-			})
+	return client.ListUsersInGroup(ctx, &cognitoidentityprovider.ListUsersInGroupInput{
+		UserPoolId: &userPoolId,
+		GroupName:  &groupName,
+	})
 }
-
 
 func filterAndAppendUsers(out []types.UserType, facilityCode string) []types.UserType {
 	var users []types.UserType
