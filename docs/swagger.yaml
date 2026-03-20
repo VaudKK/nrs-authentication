@@ -148,9 +148,9 @@ paths:
       - application/json
       description: returns a list of facility users
       parameters:
-      - description: facility_id
+      - description: facility_code
         in: query
-        name: facility_id
+        name: facility_code
         required: true
         type: string
       - description: group

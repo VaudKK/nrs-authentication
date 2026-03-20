@@ -54,8 +54,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "facility_id",
-                        "name": "facility_id",
+                        "description": "facility_code",
+                        "name": "facility_code",
                         "in": "query",
                         "required": true
                     },
