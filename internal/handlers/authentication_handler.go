@@ -44,6 +44,7 @@ func (h AuthenticationHandler) AttachRole(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param facility_id query string true "facility_id"
+// @Param group query string true "group"
 // @Success 200  {object}  []types.UserType
 // @Router /get-facility-users [get]
 func (h AuthenticationHandler) GetFacilityUsers(c *gin.Context) {
@@ -54,7 +55,14 @@ func (h AuthenticationHandler) GetFacilityUsers(c *gin.Context) {
 		return
 	}
 
-	response, err := h.AwsService.GetFacilityUsers(facilityId)
+	group := c.Query("group")
+
+	if group == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing group in query param"})
+		return
+	}
+
+	response, err := h.AwsService.GetFacilityUsers(facilityId,group)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

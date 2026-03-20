@@ -58,6 +58,13 @@ const docTemplate = `{
                         "name": "facility_id",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "group",
+                        "name": "group",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
