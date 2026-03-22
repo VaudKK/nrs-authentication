@@ -126,28 +126,28 @@ func (s *awsService) GetFacilityUsers(facilityCode, role string) ([]types.UserTy
 	}
 
 	// attach group
-	users = appendGroupName(userPoolId,s.Log,users)
+	users = appendGroupName(userPoolId, s.Log, users)
 
 	return users, nil
 }
 
-func appendGroupName(userPoolId string,logger *logrus.Logger,users []types.UserType) []types.UserType {
+func appendGroupName(userPoolId string, logger *logrus.Logger, users []types.UserType) []types.UserType {
 	// attach group
 	for i, user := range users {
 
 		value, ok := groupCache[*user.Username]
 
 		if ok {
-			attrName := "group"
-			users[i].Attributes = append(users[i].Attributes,types.AttributeType{
-				Name: &attrName,
+			attrName := "groups"
+			users[i].Attributes = append(users[i].Attributes, types.AttributeType{
+				Name:  &attrName,
 				Value: &value,
 			})
 
 			continue
 		}
 
-		response, err := getUsersGroup(*user.Username,userPoolId)
+		response, err := getUsersGroup(*user.Username, userPoolId)
 
 		if err == nil {
 			attrName := "groups"
@@ -156,25 +156,24 @@ func appendGroupName(userPoolId string,logger *logrus.Logger,users []types.UserT
 			for i, group := range response.Groups {
 				attrValue += *group.GroupName
 
-				if i < len(response.Groups) - 1 {
+				if i < len(response.Groups)-1 {
 					attrValue += ","
 				}
 			}
 
 			groupCache[*user.Username] = attrValue
 
-			users[i].Attributes = append(users[i].Attributes,types.AttributeType{
-				Name: &attrName,
+			users[i].Attributes = append(users[i].Attributes, types.AttributeType{
+				Name:  &attrName,
 				Value: &attrValue,
 			})
-		}else{
+		} else {
 			logger.WithError(err).Error("Error attaching group")
 		}
 	}
 
 	return users
 }
-
 
 func getUsersByGroup(groupName, userPoolId string) (*cognitoidentityprovider.ListUsersInGroupOutput, error) {
 	ctx := context.TODO()
@@ -184,11 +183,11 @@ func getUsersByGroup(groupName, userPoolId string) (*cognitoidentityprovider.Lis
 	})
 }
 
-func getUsersGroup(username,userPoolId string) (*cognitoidentityprovider.AdminListGroupsForUserOutput,error) {
+func getUsersGroup(username, userPoolId string) (*cognitoidentityprovider.AdminListGroupsForUserOutput, error) {
 	ctx := context.TODO()
-	return client.AdminListGroupsForUser(ctx,&cognitoidentityprovider.AdminListGroupsForUserInput{
+	return client.AdminListGroupsForUser(ctx, &cognitoidentityprovider.AdminListGroupsForUserInput{
 		UserPoolId: &userPoolId,
-		Username: &username,
+		Username:   &username,
 	})
 }
 
