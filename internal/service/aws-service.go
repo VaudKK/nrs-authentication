@@ -123,14 +123,55 @@ func (s *awsService) GetFacilityUsers(facilityCode, role string) ([]types.UserTy
 		return []types.UserType{}, nil
 	}
 
+	// attach group
+	users = appendGroupName(userPoolId,s.Log,users)
+
 	return users, nil
 }
+
+func appendGroupName(userPoolId string,logger *logrus.Logger,users []types.UserType) []types.UserType {
+	// attach group
+	for i, user := range users {
+		response, err := getUsersGroup(*user.Username,userPoolId)
+
+		if err == nil {
+			attrName := "groups"
+			attrValue := ""
+
+			for i, group := range response.Groups {
+				attrValue += *group.GroupName
+
+				if i < len(response.Groups) - 1 {
+					attrValue += ","
+				}
+			}
+
+			users[i].Attributes = append(users[i].Attributes,types.AttributeType{
+				Name: &attrName,
+				Value: &attrValue,
+			})
+		}else{
+			logger.WithError(err).Error("Error attaching group")
+		}
+	}
+
+	return users
+}
+
 
 func getUsersByGroup(groupName, userPoolId string) (*cognitoidentityprovider.ListUsersInGroupOutput, error) {
 	ctx := context.TODO()
 	return client.ListUsersInGroup(ctx, &cognitoidentityprovider.ListUsersInGroupInput{
 		UserPoolId: &userPoolId,
 		GroupName:  &groupName,
+	})
+}
+
+func getUsersGroup(username,userPoolId string) (*cognitoidentityprovider.AdminListGroupsForUserOutput,error) {
+	ctx := context.TODO()
+	return client.AdminListGroupsForUser(ctx,&cognitoidentityprovider.AdminListGroupsForUserInput{
+		UserPoolId: &userPoolId,
+		Username: &username,
 	})
 }
 
