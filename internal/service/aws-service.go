@@ -14,7 +14,6 @@ import (
 
 var client *cognitoidentityprovider.Client
 
-var groupCache map[string]string = make(map[string]string)
 
 type AwsService interface {
 	AttachRole(dto.AttachRoleRequest) (dto.AttachRoleResponse, error)
@@ -135,18 +134,6 @@ func appendGroupName(userPoolId string, logger *logrus.Logger, users []types.Use
 	// attach group
 	for i, user := range users {
 
-		value, ok := groupCache[*user.Username]
-
-		if ok {
-			attrName := "groups"
-			users[i].Attributes = append(users[i].Attributes, types.AttributeType{
-				Name:  &attrName,
-				Value: &value,
-			})
-
-			continue
-		}
-
 		response, err := getUsersGroup(*user.Username, userPoolId)
 
 		if err == nil {
@@ -160,8 +147,6 @@ func appendGroupName(userPoolId string, logger *logrus.Logger, users []types.Use
 					attrValue += ","
 				}
 			}
-
-			groupCache[*user.Username] = attrValue
 
 			users[i].Attributes = append(users[i].Attributes, types.AttributeType{
 				Name:  &attrName,
