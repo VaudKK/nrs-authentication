@@ -3,3 +3,6 @@
 
 # temporary build
 tmp/
+
+# air live reloading
+.air.toml

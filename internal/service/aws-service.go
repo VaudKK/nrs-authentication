@@ -14,10 +14,10 @@ import (
 
 var client *cognitoidentityprovider.Client
 
-
 type AwsService interface {
 	AttachRole(dto.AttachRoleRequest) (dto.AttachRoleResponse, error)
 	GetFacilityUsers(string, string) ([]types.UserType, error)
+	GetUser(string) (*cognitoidentityprovider.ListUsersOutput, error)
 }
 
 type awsService struct {
@@ -79,6 +79,26 @@ func (s *awsService) AttachRole(request dto.AttachRoleRequest) (dto.AttachRoleRe
 		Success: true,
 		Message: "Success",
 	}, nil
+}
+
+func (s *awsService) GetUser(email string) (*cognitoidentityprovider.ListUsersOutput, error) {
+
+	ctx := context.TODO()
+
+	userPoolId := s.Config.CognitoUserPoolId
+	filter := "email = \"" + email + "\""
+	limit := int32(1)
+
+	response, err := client.ListUsers(ctx, &cognitoidentityprovider.ListUsersInput{
+		UserPoolId: &userPoolId,
+		Filter:     &filter,
+		Limit:      &limit,
+	})
+	if err != nil {
+		s.Log.WithError(err).Error("Error while fetching user")
+		return nil, err
+	}
+	return response, nil
 }
 
 func (s *awsService) GetFacilityUsers(facilityCode, role string) ([]types.UserType, error) {

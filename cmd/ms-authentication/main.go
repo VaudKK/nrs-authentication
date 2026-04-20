@@ -64,6 +64,7 @@ func main() {
 	router.Use(cors.New(corsConfig))
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/api/v1/auth/get-user", authenticationHandler.GetUser)
 
 	authenticationGroup := router.Group("/api/v1/auth/me")
 	{

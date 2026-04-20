@@ -73,9 +73,106 @@
                     }
                 }
             }
+        },
+        "/get-user": {
+            "get": {
+                "description": "returns a user by email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user by email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cognitoidentityprovider.AdminGetUserOutput"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "cognitoidentityprovider.AdminGetUserOutput": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "description": "Indicates whether the user is activated for sign-in.",
+                    "type": "boolean"
+                },
+                "mfaoptions": {
+                    "description": "This response parameter is no longer supported. It provides information only\nabout SMS MFA configurations. It doesn't provide information about time-based\none-time password (TOTP) software token MFA configurations. To look up\ninformation about either type of MFA configuration, use UserMFASettingList\ninstead.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.MFAOptionType"
+                    }
+                },
+                "preferredMfaSetting": {
+                    "description": "The user's preferred MFA. Users can prefer SMS message, email message, or TOTP\nMFA.",
+                    "type": "string"
+                },
+                "resultMetadata": {
+                    "description": "Metadata pertaining to the operation's result.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/middleware.Metadata"
+                        }
+                    ]
+                },
+                "userAttributes": {
+                    "description": "An array of name-value pairs of user attributes and their values, for example\n\"email\": \"testuser@example.com\" .",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.AttributeType"
+                    }
+                },
+                "userCreateDate": {
+                    "description": "The date and time when the item was created. Amazon Cognito returns this\ntimestamp in UNIX epoch time format. Your SDK might render the output in a\nhuman-readable format like ISO 8601 or a Java Date object.",
+                    "type": "string"
+                },
+                "userLastModifiedDate": {
+                    "description": "The date and time when the item was modified. Amazon Cognito returns this\ntimestamp in UNIX epoch time format. Your SDK might render the output in a\nhuman-readable format like ISO 8601 or a Java Date object.",
+                    "type": "string"
+                },
+                "userMFASettingList": {
+                    "description": "The MFA options that are activated for the user. The possible values in this\nlist are SMS_MFA , EMAIL_OTP , and SOFTWARE_TOKEN_MFA .",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "userStatus": {
+                    "description": "The user's status. Can be one of the following:\n\n  - UNCONFIRMED - User has been created but not confirmed.\n\n  - CONFIRMED - User has been confirmed.\n\n  - UNKNOWN - User status isn't known.\n\n  - RESET_REQUIRED - User is confirmed, but the user must request a code and\n  reset their password before they can sign in.\n\n  - FORCE_CHANGE_PASSWORD - The user is confirmed and the user can sign in\n  using a temporary password, but on first sign-in, the user must change their\n  password to a new value before doing anything else.\n\n  - EXTERNAL_PROVIDER - The user signed in with a third-party identity provider.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/types.UserStatusType"
+                        }
+                    ]
+                },
+                "username": {
+                    "description": "The username of the user that you requested.\n\nThis member is required.",
+                    "type": "string"
+                }
+            }
+        },
+        "middleware.Metadata": {
+            "type": "object"
+        },
         "nrs-authentication_internal_dto.AttachRoleResponse": {
             "type": "object",
             "properties": {

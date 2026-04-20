@@ -1,5 +1,84 @@
 basePath: /api/v1/auth/me
 definitions:
+  cognitoidentityprovider.AdminGetUserOutput:
+    properties:
+      enabled:
+        description: Indicates whether the user is activated for sign-in.
+        type: boolean
+      mfaoptions:
+        description: |-
+          This response parameter is no longer supported. It provides information only
+          about SMS MFA configurations. It doesn't provide information about time-based
+          one-time password (TOTP) software token MFA configurations. To look up
+          information about either type of MFA configuration, use UserMFASettingList
+          instead.
+        items:
+          $ref: '#/definitions/types.MFAOptionType'
+        type: array
+      preferredMfaSetting:
+        description: |-
+          The user's preferred MFA. Users can prefer SMS message, email message, or TOTP
+          MFA.
+        type: string
+      resultMetadata:
+        allOf:
+        - $ref: '#/definitions/middleware.Metadata'
+        description: Metadata pertaining to the operation's result.
+      userAttributes:
+        description: |-
+          An array of name-value pairs of user attributes and their values, for example
+          "email": "testuser@example.com" .
+        items:
+          $ref: '#/definitions/types.AttributeType'
+        type: array
+      userCreateDate:
+        description: |-
+          The date and time when the item was created. Amazon Cognito returns this
+          timestamp in UNIX epoch time format. Your SDK might render the output in a
+          human-readable format like ISO 8601 or a Java Date object.
+        type: string
+      userLastModifiedDate:
+        description: |-
+          The date and time when the item was modified. Amazon Cognito returns this
+          timestamp in UNIX epoch time format. Your SDK might render the output in a
+          human-readable format like ISO 8601 or a Java Date object.
+        type: string
+      userMFASettingList:
+        description: |-
+          The MFA options that are activated for the user. The possible values in this
+          list are SMS_MFA , EMAIL_OTP , and SOFTWARE_TOKEN_MFA .
+        items:
+          type: string
+        type: array
+      userStatus:
+        allOf:
+        - $ref: '#/definitions/types.UserStatusType'
+        description: |-
+          The user's status. Can be one of the following:
+
+            - UNCONFIRMED - User has been created but not confirmed.
+
+            - CONFIRMED - User has been confirmed.
+
+            - UNKNOWN - User status isn't known.
+
+            - RESET_REQUIRED - User is confirmed, but the user must request a code and
+            reset their password before they can sign in.
+
+            - FORCE_CHANGE_PASSWORD - The user is confirmed and the user can sign in
+            using a temporary password, but on first sign-in, the user must change their
+            password to a new value before doing anything else.
+
+            - EXTERNAL_PROVIDER - The user signed in with a third-party identity provider.
+      username:
+        description: |-
+          The username of the user that you requested.
+
+          This member is required.
+        type: string
+    type: object
+  middleware.Metadata:
+    type: object
   nrs-authentication_internal_dto.AttachRoleResponse:
     properties:
       message:
@@ -168,6 +247,27 @@ paths:
               $ref: '#/definitions/types.UserType'
             type: array
       summary: Get users for a facility
+      tags:
+      - users
+  /get-user:
+    get:
+      consumes:
+      - application/json
+      description: returns a user by email
+      parameters:
+      - description: email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cognitoidentityprovider.AdminGetUserOutput'
+      summary: Get user by email
       tags:
       - users
 swagger: "2.0"
