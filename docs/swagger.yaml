@@ -1,5 +1,23 @@
-basePath: /api/v1/auth/me
+basePath: /api/v1/auth
 definitions:
+  cognitoidentityprovider.ListUsersOutput:
+    properties:
+      paginationToken:
+        description: The identifier that Amazon Cognito returned with the previous
+          request to this operation. When you include a pagination token in your request,
+          Amazon Cognito returns the next set of items in the list. By use of this token,
+          you can paginate through the full list of items.
+        type: string
+      resultMetadata:
+        allOf:
+        - $ref: '#/definitions/middleware.Metadata'
+        description: Metadata pertaining to the operation's result.
+      users:
+        description: An array of user pool users who match your query.
+        items:
+          $ref: '#/definitions/types.UserType'
+        type: array
+    type: object
   cognitoidentityprovider.AdminGetUserOutput:
     properties:
       enabled:
@@ -206,7 +224,28 @@ info:
   title: nrs-authentication
   version: "1.0"
 paths:
-  /attach-role:
+  /get-user:
+    get:
+      consumes:
+      - application/json
+      description: returns a user by email
+      parameters:
+      - description: email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/cognitoidentityprovider.ListUsersOutput'
+      summary: Get user by email
+      tags:
+      - users
+  /me/attach-role:
     post:
       consumes:
       - application/json
@@ -221,7 +260,7 @@ paths:
       summary: Attach a role to a user
       tags:
       - roles
-  /get-facility-users:
+  /me/get-facility-users:
     get:
       consumes:
       - application/json
@@ -247,27 +286,6 @@ paths:
               $ref: '#/definitions/types.UserType'
             type: array
       summary: Get users for a facility
-      tags:
-      - users
-  /get-user:
-    get:
-      consumes:
-      - application/json
-      description: returns a user by email
-      parameters:
-      - description: email
-        in: query
-        name: email
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/cognitoidentityprovider.AdminGetUserOutput'
-      summary: Get user by email
       tags:
       - users
 swagger: "2.0"

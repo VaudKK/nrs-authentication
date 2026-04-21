@@ -15,7 +15,39 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/attach-role": {
+        "/get-user": {
+            "get": {
+                "description": "returns a user by email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user by email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/cognitoidentityprovider.ListUsersOutput"
+                        }
+                    }
+                }
+            }
+        },
+        "/me/attach-role": {
             "post": {
                 "description": "attaches a role to a user",
                 "consumes": [
@@ -38,7 +70,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/get-facility-users": {
+        "/me/get-facility-users": {
             "get": {
                 "description": "returns a list of facility users",
                 "consumes": [
@@ -79,41 +111,33 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/get-user": {
-            "get": {
-                "description": "returns a user by email",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Get user by email",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "email",
-                        "name": "email",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/cognitoidentityprovider.AdminGetUserOutput"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
+        "cognitoidentityprovider.ListUsersOutput": {
+            "type": "object",
+            "properties": {
+                "paginationToken": {
+                    "description": "The identifier that Amazon Cognito returned with the previous request to this operation. When you include a pagination token in your request, Amazon Cognito returns the next set of items in the list. By use of this token, you can paginate through the full list of items.",
+                    "type": "string"
+                },
+                "resultMetadata": {
+                    "description": "Metadata pertaining to the operation's result.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/middleware.Metadata"
+                        }
+                    ]
+                },
+                "users": {
+                    "description": "An array of user pool users who match your query.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.UserType"
+                    }
+                }
+            }
+        },
         "cognitoidentityprovider.AdminGetUserOutput": {
             "type": "object",
             "properties": {
@@ -304,7 +328,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1/auth/me",
+	BasePath:         "/api/v1/auth",
 	Schemes:          []string{},
 	Title:            "nrs-authentication",
 	Description:      "Handles authentication utilities",

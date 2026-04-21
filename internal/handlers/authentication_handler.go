@@ -46,7 +46,7 @@ func (h AuthenticationHandler) AttachRole(c *gin.Context) {
 // @Param facility_code query string true "facility_code"
 // @Param group query string true "group"
 // @Success 200  {object}  []types.UserType
-// @Router /get-facility-users [get]
+// @Router /me/get-facility-users [get]
 func (h AuthenticationHandler) GetFacilityUsers(c *gin.Context) {
 	facilityCode := c.Query("facility_code")
 
@@ -79,7 +79,7 @@ func (h AuthenticationHandler) GetFacilityUsers(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param email query string true "email"
-// @Success 200  {object}  cognitoidentityprovider.AdminGetUserOutput
+// @Success 200  {object}  cognitoidentityprovider.ListUsersOutput
 // @Router /get-user [get]
 func (h AuthenticationHandler) GetUser(c *gin.Context) {
 	username := c.Query("email")

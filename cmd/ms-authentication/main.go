@@ -33,7 +33,7 @@ func init() {
 // @version 1.0
 // @description Handles authentication utilities
 // @host localhost:8080
-// @basePath /api/v1/auth/me
+// @basePath /api/v1/auth
 func main() {
 	var appConfig = config.LoadConfig(log)
 
