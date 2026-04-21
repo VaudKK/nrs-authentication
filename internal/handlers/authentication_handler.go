@@ -74,12 +74,12 @@ func (h AuthenticationHandler) GetFacilityUsers(c *gin.Context) {
 
 
 // @Summary Get user by email
-// @Description returns a user by email
+// @Description Returns a user by email.
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param email query string true "email"
-// @Success 200  {object}  cognitoidentityprovider.ListUsersOutput
+// @Param email query string true "Email"
+// @Success 200  {object}  dto.ListUsersOutputSwagger  "User lookup result."
 // @Router /get-user [get]
 func (h AuthenticationHandler) GetUser(c *gin.Context) {
 	username := c.Query("email")

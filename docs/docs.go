@@ -15,39 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/get-user": {
-            "get": {
-                "description": "returns a user by email",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Get user by email",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "email",
-                        "name": "email",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/cognitoidentityprovider.ListUsersOutput"
-                        }
-                    }
-                }
-            }
-        },
-        "/me/attach-role": {
+        "/attach-role": {
             "post": {
                 "description": "attaches a role to a user",
                 "consumes": [
@@ -65,6 +33,38 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/get-user": {
+            "get": {
+                "description": "Returns a user by email.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user by email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email",
+                        "name": "email",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User lookup result.",
+                        "schema": {
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.ListUsersOutputSwagger"
                         }
                     }
                 }
@@ -114,95 +114,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "cognitoidentityprovider.ListUsersOutput": {
-            "type": "object",
-            "properties": {
-                "paginationToken": {
-                    "description": "The identifier that Amazon Cognito returned with the previous request to this operation. When you include a pagination token in your request, Amazon Cognito returns the next set of items in the list. By use of this token, you can paginate through the full list of items.",
-                    "type": "string"
-                },
-                "resultMetadata": {
-                    "description": "Metadata pertaining to the operation's result.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/middleware.Metadata"
-                        }
-                    ]
-                },
-                "users": {
-                    "description": "An array of user pool users who match your query.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.UserType"
-                    }
-                }
-            }
-        },
-        "cognitoidentityprovider.AdminGetUserOutput": {
-            "type": "object",
-            "properties": {
-                "enabled": {
-                    "description": "Indicates whether the user is activated for sign-in.",
-                    "type": "boolean"
-                },
-                "mfaoptions": {
-                    "description": "This response parameter is no longer supported. It provides information only\nabout SMS MFA configurations. It doesn't provide information about time-based\none-time password (TOTP) software token MFA configurations. To look up\ninformation about either type of MFA configuration, use UserMFASettingList\ninstead.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.MFAOptionType"
-                    }
-                },
-                "preferredMfaSetting": {
-                    "description": "The user's preferred MFA. Users can prefer SMS message, email message, or TOTP\nMFA.",
-                    "type": "string"
-                },
-                "resultMetadata": {
-                    "description": "Metadata pertaining to the operation's result.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/middleware.Metadata"
-                        }
-                    ]
-                },
-                "userAttributes": {
-                    "description": "An array of name-value pairs of user attributes and their values, for example\n\"email\": \"testuser@example.com\" .",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.AttributeType"
-                    }
-                },
-                "userCreateDate": {
-                    "description": "The date and time when the item was created. Amazon Cognito returns this\ntimestamp in UNIX epoch time format. Your SDK might render the output in a\nhuman-readable format like ISO 8601 or a Java Date object.",
-                    "type": "string"
-                },
-                "userLastModifiedDate": {
-                    "description": "The date and time when the item was modified. Amazon Cognito returns this\ntimestamp in UNIX epoch time format. Your SDK might render the output in a\nhuman-readable format like ISO 8601 or a Java Date object.",
-                    "type": "string"
-                },
-                "userMFASettingList": {
-                    "description": "The MFA options that are activated for the user. The possible values in this\nlist are SMS_MFA , EMAIL_OTP , and SOFTWARE_TOKEN_MFA .",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "userStatus": {
-                    "description": "The user's status. Can be one of the following:\n\n  - UNCONFIRMED - User has been created but not confirmed.\n\n  - CONFIRMED - User has been confirmed.\n\n  - UNKNOWN - User status isn't known.\n\n  - RESET_REQUIRED - User is confirmed, but the user must request a code and\n  reset their password before they can sign in.\n\n  - FORCE_CHANGE_PASSWORD - The user is confirmed and the user can sign in\n  using a temporary password, but on first sign-in, the user must change their\n  password to a new value before doing anything else.\n\n  - EXTERNAL_PROVIDER - The user signed in with a third-party identity provider.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.UserStatusType"
-                        }
-                    ]
-                },
-                "username": {
-                    "description": "The username of the user that you requested.\n\nThis member is required.",
-                    "type": "string"
-                }
-            }
-        },
-        "middleware.Metadata": {
-            "type": "object"
-        },
         "nrs-authentication_internal_dto.AttachRoleResponse": {
             "type": "object",
             "properties": {
@@ -214,11 +125,85 @@ const docTemplate = `{
                 }
             }
         },
+        "nrs-authentication_internal_dto.AttributeTypeSwagger": {
+            "type": "object",
+            "properties": {
+                "Name": {
+                    "type": "string"
+                },
+                "Value": {
+                    "type": "string"
+                }
+            }
+        },
+        "nrs-authentication_internal_dto.ListUsersOutputSwagger": {
+            "type": "object",
+            "properties": {
+                "PaginationToken": {
+                    "type": "string"
+                },
+                "ResultMetadata": {
+                    "$ref": "#/definitions/nrs-authentication_internal_dto.MetadataSwagger"
+                },
+                "Users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/nrs-authentication_internal_dto.UserTypeSwagger"
+                    }
+                }
+            }
+        },
+        "nrs-authentication_internal_dto.MFAOptionTypeSwagger": {
+            "type": "object",
+            "properties": {
+                "AttributeName": {
+                    "type": "string"
+                },
+                "DeliveryMedium": {
+                    "type": "string"
+                }
+            }
+        },
+        "nrs-authentication_internal_dto.MetadataSwagger": {
+            "type": "object"
+        },
+        "nrs-authentication_internal_dto.UserTypeSwagger": {
+            "type": "object",
+            "properties": {
+                "Attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/nrs-authentication_internal_dto.AttributeTypeSwagger"
+                    }
+                },
+                "Enabled": {
+                    "type": "boolean"
+                },
+                "MFAOptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/nrs-authentication_internal_dto.MFAOptionTypeSwagger"
+                    }
+                },
+                "UserCreateDate": {
+                    "type": "string"
+                },
+                "UserLastModifiedDate": {
+                    "type": "string"
+                },
+                "UserStatus": {
+                    "type": "string"
+                },
+                "Username": {
+                    "type": "string"
+                }
+            }
+        },
         "types.AttributeType": {
             "type": "object",
             "properties": {
                 "name": {
-                    "description": "The name of the attribute, for example email or custom:department .\n\nIn some older user pools, the regex pattern for acceptable values of this\nparameter is [\\p{L}\\p{M}\\p{S}\\p{N}\\p{P}]+ . Older pools will eventually be\nupdated to use the new pattern. Affected user pools are those created before May\n2024 in US East (N. Virginia), US East (Ohio), US West (N. California), US West\n(Oregon), Asia Pacific (Mumbai), Asia Pacific (Tokyo), Asia Pacific (Seoul),\nAsia Pacific (Singapore), Asia Pacific (Sydney), Canada (Central), Europe\n(Frankfurt), Europe (Ireland), Europe (London), Europe (Paris), Europe\n(Stockholm), Middle East (Bahrain), and South America (São Paulo).\n\nThis member is required.",
+                    "description": "The name of the attribute, for example email or custom:department .",
                     "type": "string"
                 },
                 "value": {
@@ -246,7 +231,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "deliveryMedium": {
-                    "description": "The delivery medium to send the MFA code. You can use this parameter to set\nonly the SMS delivery medium value.",
+                    "description": "The delivery medium to send the MFA code.",
                     "allOf": [
                         {
                             "$ref": "#/definitions/types.DeliveryMediumType"
@@ -300,15 +285,14 @@ const docTemplate = `{
                     }
                 },
                 "userCreateDate": {
-                    "description": "The date and time when the item was created. Amazon Cognito returns this\ntimestamp in UNIX epoch time format. Your SDK might render the output in a\nhuman-readable format like ISO 8601 or a Java Date object.",
+                    "description": "The date and time when the item was created.",
                     "type": "string"
                 },
                 "userLastModifiedDate": {
-                    "description": "The date and time when the item was modified. Amazon Cognito returns this\ntimestamp in UNIX epoch time format. Your SDK might render the output in a\nhuman-readable format like ISO 8601 or a Java Date object.",
+                    "description": "The date and time when the item was modified.",
                     "type": "string"
                 },
                 "userStatus": {
-                    "description": "The user status. This can be one of the following:\n\n  - UNCONFIRMED : User has been created but not confirmed.\n\n  - CONFIRMED : User has been confirmed.\n\n  - EXTERNAL_PROVIDER : User signed in with a third-party IdP.\n\n  - RESET_REQUIRED : User is confirmed, but the user must request a code and\n  reset their password before they can sign in.\n\n  - FORCE_CHANGE_PASSWORD : The user is confirmed and the user can sign in using\n  a temporary password, but on first sign-in, the user must change their password\n  to a new value before doing anything else.\n\nThe statuses ARCHIVED , UNKNOWN , and COMPROMISED are no longer used.",
                     "allOf": [
                         {
                             "$ref": "#/definitions/types.UserStatusType"

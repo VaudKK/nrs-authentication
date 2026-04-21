@@ -1,102 +1,5 @@
 basePath: /api/v1/auth
 definitions:
-  cognitoidentityprovider.ListUsersOutput:
-    properties:
-      paginationToken:
-        description: The identifier that Amazon Cognito returned with the previous
-          request to this operation. When you include a pagination token in your request,
-          Amazon Cognito returns the next set of items in the list. By use of this token,
-          you can paginate through the full list of items.
-        type: string
-      resultMetadata:
-        allOf:
-        - $ref: '#/definitions/middleware.Metadata'
-        description: Metadata pertaining to the operation's result.
-      users:
-        description: An array of user pool users who match your query.
-        items:
-          $ref: '#/definitions/types.UserType'
-        type: array
-    type: object
-  cognitoidentityprovider.AdminGetUserOutput:
-    properties:
-      enabled:
-        description: Indicates whether the user is activated for sign-in.
-        type: boolean
-      mfaoptions:
-        description: |-
-          This response parameter is no longer supported. It provides information only
-          about SMS MFA configurations. It doesn't provide information about time-based
-          one-time password (TOTP) software token MFA configurations. To look up
-          information about either type of MFA configuration, use UserMFASettingList
-          instead.
-        items:
-          $ref: '#/definitions/types.MFAOptionType'
-        type: array
-      preferredMfaSetting:
-        description: |-
-          The user's preferred MFA. Users can prefer SMS message, email message, or TOTP
-          MFA.
-        type: string
-      resultMetadata:
-        allOf:
-        - $ref: '#/definitions/middleware.Metadata'
-        description: Metadata pertaining to the operation's result.
-      userAttributes:
-        description: |-
-          An array of name-value pairs of user attributes and their values, for example
-          "email": "testuser@example.com" .
-        items:
-          $ref: '#/definitions/types.AttributeType'
-        type: array
-      userCreateDate:
-        description: |-
-          The date and time when the item was created. Amazon Cognito returns this
-          timestamp in UNIX epoch time format. Your SDK might render the output in a
-          human-readable format like ISO 8601 or a Java Date object.
-        type: string
-      userLastModifiedDate:
-        description: |-
-          The date and time when the item was modified. Amazon Cognito returns this
-          timestamp in UNIX epoch time format. Your SDK might render the output in a
-          human-readable format like ISO 8601 or a Java Date object.
-        type: string
-      userMFASettingList:
-        description: |-
-          The MFA options that are activated for the user. The possible values in this
-          list are SMS_MFA , EMAIL_OTP , and SOFTWARE_TOKEN_MFA .
-        items:
-          type: string
-        type: array
-      userStatus:
-        allOf:
-        - $ref: '#/definitions/types.UserStatusType'
-        description: |-
-          The user's status. Can be one of the following:
-
-            - UNCONFIRMED - User has been created but not confirmed.
-
-            - CONFIRMED - User has been confirmed.
-
-            - UNKNOWN - User status isn't known.
-
-            - RESET_REQUIRED - User is confirmed, but the user must request a code and
-            reset their password before they can sign in.
-
-            - FORCE_CHANGE_PASSWORD - The user is confirmed and the user can sign in
-            using a temporary password, but on first sign-in, the user must change their
-            password to a new value before doing anything else.
-
-            - EXTERNAL_PROVIDER - The user signed in with a third-party identity provider.
-      username:
-        description: |-
-          The username of the user that you requested.
-
-          This member is required.
-        type: string
-    type: object
-  middleware.Metadata:
-    type: object
   nrs-authentication_internal_dto.AttachRoleResponse:
     properties:
       message:
@@ -104,22 +7,58 @@ definitions:
       success:
         type: boolean
     type: object
+  nrs-authentication_internal_dto.AttributeTypeSwagger:
+    properties:
+      Name:
+        type: string
+      Value:
+        type: string
+    type: object
+  nrs-authentication_internal_dto.ListUsersOutputSwagger:
+    properties:
+      PaginationToken:
+        type: string
+      ResultMetadata:
+        $ref: '#/definitions/nrs-authentication_internal_dto.MetadataSwagger'
+      Users:
+        items:
+          $ref: '#/definitions/nrs-authentication_internal_dto.UserTypeSwagger'
+        type: array
+    type: object
+  nrs-authentication_internal_dto.MFAOptionTypeSwagger:
+    properties:
+      AttributeName:
+        type: string
+      DeliveryMedium:
+        type: string
+    type: object
+  nrs-authentication_internal_dto.MetadataSwagger:
+    type: object
+  nrs-authentication_internal_dto.UserTypeSwagger:
+    properties:
+      Attributes:
+        items:
+          $ref: '#/definitions/nrs-authentication_internal_dto.AttributeTypeSwagger'
+        type: array
+      Enabled:
+        type: boolean
+      MFAOptions:
+        items:
+          $ref: '#/definitions/nrs-authentication_internal_dto.MFAOptionTypeSwagger'
+        type: array
+      UserCreateDate:
+        type: string
+      UserLastModifiedDate:
+        type: string
+      UserStatus:
+        type: string
+      Username:
+        type: string
+    type: object
   types.AttributeType:
     properties:
       name:
-        description: |-
-          The name of the attribute, for example email or custom:department .
-
-          In some older user pools, the regex pattern for acceptable values of this
-          parameter is [\p{L}\p{M}\p{S}\p{N}\p{P}]+ . Older pools will eventually be
-          updated to use the new pattern. Affected user pools are those created before May
-          2024 in US East (N. Virginia), US East (Ohio), US West (N. California), US West
-          (Oregon), Asia Pacific (Mumbai), Asia Pacific (Tokyo), Asia Pacific (Seoul),
-          Asia Pacific (Singapore), Asia Pacific (Sydney), Canada (Central), Europe
-          (Frankfurt), Europe (Ireland), Europe (London), Europe (Paris), Europe
-          (Stockholm), Middle East (Bahrain), and South America (São Paulo).
-
-          This member is required.
+        description: The name of the attribute, for example email or custom:department .
         type: string
       value:
         description: The value of the attribute.
@@ -136,15 +75,12 @@ definitions:
   types.MFAOptionType:
     properties:
       attributeName:
-        description: The attribute name of the MFA option type. The only valid value
-          is phone_number .
+        description: The attribute name of the MFA option type. The only valid value is phone_number .
         type: string
       deliveryMedium:
         allOf:
         - $ref: '#/definitions/types.DeliveryMediumType'
-        description: |-
-          The delivery medium to send the MFA code. You can use this parameter to set
-          only the SMS delivery medium value.
+        description: The delivery medium to send the MFA code.
     type: object
   types.UserStatusType:
     enum:
@@ -182,37 +118,14 @@ definitions:
           $ref: '#/definitions/types.MFAOptionType'
         type: array
       userCreateDate:
-        description: |-
-          The date and time when the item was created. Amazon Cognito returns this
-          timestamp in UNIX epoch time format. Your SDK might render the output in a
-          human-readable format like ISO 8601 or a Java Date object.
+        description: The date and time when the item was created.
         type: string
       userLastModifiedDate:
-        description: |-
-          The date and time when the item was modified. Amazon Cognito returns this
-          timestamp in UNIX epoch time format. Your SDK might render the output in a
-          human-readable format like ISO 8601 or a Java Date object.
+        description: The date and time when the item was modified.
         type: string
       userStatus:
         allOf:
         - $ref: '#/definitions/types.UserStatusType'
-        description: |-
-          The user status. This can be one of the following:
-
-            - UNCONFIRMED : User has been created but not confirmed.
-
-            - CONFIRMED : User has been confirmed.
-
-            - EXTERNAL_PROVIDER : User signed in with a third-party IdP.
-
-            - RESET_REQUIRED : User is confirmed, but the user must request a code and
-            reset their password before they can sign in.
-
-            - FORCE_CHANGE_PASSWORD : The user is confirmed and the user can sign in using
-            a temporary password, but on first sign-in, the user must change their password
-            to a new value before doing anything else.
-
-          The statuses ARCHIVED , UNKNOWN , and COMPROMISED are no longer used.
       username:
         description: The user's username.
         type: string
@@ -224,28 +137,7 @@ info:
   title: nrs-authentication
   version: "1.0"
 paths:
-  /get-user:
-    get:
-      consumes:
-      - application/json
-      description: returns a user by email
-      parameters:
-      - description: email
-        in: query
-        name: email
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/cognitoidentityprovider.ListUsersOutput'
-      summary: Get user by email
-      tags:
-      - users
-  /me/attach-role:
+  /attach-role:
     post:
       consumes:
       - application/json
@@ -260,6 +152,27 @@ paths:
       summary: Attach a role to a user
       tags:
       - roles
+  /get-user:
+    get:
+      consumes:
+      - application/json
+      description: Returns a user by email.
+      parameters:
+      - description: Email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User lookup result.
+          schema:
+            $ref: '#/definitions/nrs-authentication_internal_dto.ListUsersOutputSwagger'
+      summary: Get user by email
+      tags:
+      - users
   /me/get-facility-users:
     get:
       consumes:
