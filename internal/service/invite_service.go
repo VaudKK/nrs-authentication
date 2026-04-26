@@ -23,6 +23,7 @@ var (
 type InviteService interface {
 	CreateInvite(dto.CreateInviteRequest, string) (dto.InviteResponse, error)
 	ListPendingInvites(string) ([]dto.InviteResponse, error)
+	ListUserOrganizationsByEmail(string) ([]dto.UserOrganizationMappingResponse, error)
 	AcceptInvite(string) (dto.InviteResponse, error)
 	AttachRoleByInviteID(string) (dto.AttachRoleResponse, error)
 }
@@ -70,7 +71,7 @@ func NewInviteService(cfg *config.Config, log *logrus.Logger, awsService AwsServ
 		return nil, err
 	}
 
-	if err := db.AutoMigrate(&model.Invite{}); err != nil {
+	if err := db.AutoMigrate(&model.Invite{}, &model.UserOrganizationMapping{}); err != nil {
 		return nil, err
 	}
 
@@ -133,6 +134,20 @@ func (s *inviteService) ListPendingInvites(organizationID string) ([]dto.InviteR
 	return response, nil
 }
 
+func (s *inviteService) ListUserOrganizationsByEmail(userEmail string) ([]dto.UserOrganizationMappingResponse, error) {
+	var mappings []model.UserOrganizationMapping
+	if err := s.db.Where("user_email = ?", strings.TrimSpace(strings.ToLower(userEmail))).Order("organization_name asc").Find(&mappings).Error; err != nil {
+		return nil, err
+	}
+
+	response := make([]dto.UserOrganizationMappingResponse, 0, len(mappings))
+	for _, mapping := range mappings {
+		response = append(response, mapUserOrganizationMapping(mapping))
+	}
+
+	return response, nil
+}
+
 func (s *inviteService) AcceptInvite(inviteID string) (dto.InviteResponse, error) {
 	invite, err := s.findInvite(inviteID)
 	if err != nil {
@@ -170,10 +185,23 @@ func (s *inviteService) AttachRoleByInviteID(inviteID string) (dto.AttachRoleRes
 		return dto.AttachRoleResponse{Success: false, Message: "invited user not found"}, errors.New("invited user not found")
 	}
 
-	return s.awsService.AttachRole(dto.AttachRoleRequest{
+	response, err := s.awsService.AttachRole(dto.AttachRoleRequest{
 		Username:  strings.TrimSpace(*user.Users[0].Username),
 		GroupName: invite.RoleName,
 	})
+	if err != nil {
+		return response, err
+	}
+
+	if err := s.upsertUserOrganizationMapping(invite); err != nil {
+		s.log.WithError(err).Error("Error while saving user organization mapping")
+		return dto.AttachRoleResponse{
+			Success: false,
+			Message: "role attached but failed to save organization mapping",
+		}, err
+	}
+
+	return response, nil
 }
 
 func (s *inviteService) findInvite(inviteID string) (model.Invite, error) {
@@ -209,4 +237,45 @@ func mapInvite(invite model.Invite) dto.InviteResponse {
 		CreatedAt:        invite.CreatedAt,
 		UpdatedAt:        invite.UpdatedAt,
 	}
+}
+
+func mapUserOrganizationMapping(mapping model.UserOrganizationMapping) dto.UserOrganizationMappingResponse {
+	return dto.UserOrganizationMappingResponse{
+		ID:               mapping.ID,
+		UserEmail:        mapping.UserEmail,
+		OrganizationID:   mapping.OrganizationID,
+		OrganizationName: mapping.OrganizationName,
+		RoleName:         mapping.RoleName,
+		Active:           mapping.Active,
+		CreatedAt:        mapping.CreatedAt,
+		UpdatedAt:        mapping.UpdatedAt,
+	}
+}
+
+func (s *inviteService) upsertUserOrganizationMapping(invite model.Invite) error {
+	userEmail := strings.TrimSpace(strings.ToLower(invite.TargetEmail))
+	organizationID := strings.TrimSpace(invite.OrganizationID)
+
+	var mapping model.UserOrganizationMapping
+	err := s.db.Where("user_email = ? AND organization_id = ?", userEmail, organizationID).First(&mapping).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			mapping = model.UserOrganizationMapping{
+				UserEmail:        userEmail,
+				OrganizationID:   organizationID,
+				OrganizationName: strings.TrimSpace(invite.OrganizationName),
+				RoleName:         strings.TrimSpace(invite.RoleName),
+				Active:           true,
+			}
+			return s.db.Create(&mapping).Error
+		}
+
+		return err
+	}
+
+	mapping.OrganizationName = strings.TrimSpace(invite.OrganizationName)
+	mapping.RoleName = strings.TrimSpace(invite.RoleName)
+	mapping.Active = true
+
+	return s.db.Save(&mapping).Error
 }

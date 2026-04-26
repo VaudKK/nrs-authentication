@@ -15,38 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/get-user": {
-            "get": {
-                "description": "Returns a user by email.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Get user by email",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Email",
-                        "name": "email",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User lookup result.",
-                        "schema": {
-                            "$ref": "#/definitions/dto.ListUsersOutputSwagger"
-                        }
-                    }
-                }
-            }
-        },
         "/invites/{inviteId}/accept": {
             "get": {
                 "description": "Marks an invite as accepted.",
@@ -62,7 +30,7 @@ const docTemplate = `{
                 "summary": "Accept invite",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Invite ID",
                         "name": "inviteId",
                         "in": "path",
@@ -73,19 +41,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
                         }
                     }
                 }
@@ -106,7 +80,7 @@ const docTemplate = `{
                 "summary": "Attach role from invite",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Invite ID",
                         "name": "inviteId",
                         "in": "path",
@@ -117,101 +91,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.AttachRoleResponse"
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/dto.AttachRoleResponse"
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/dto.AttachRoleResponse"
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/dto.AttachRoleResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/me/attach-role": {
-            "post": {
-                "description": "attaches a role to a user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "roles"
-                ],
-                "summary": "Attach a role to a user",
-                "parameters": [
-                    {
-                        "description": "Attach role request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.AttachRoleRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.AttachRoleResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/me/get-facility-users": {
-            "get": {
-                "description": "returns a list of facility users",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "users"
-                ],
-                "summary": "Get users for a facility",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "facility_code",
-                        "name": "facility_code",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "group",
-                        "name": "group",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dto.UserTypeSwagger"
-                            }
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
                         }
                     }
                 }
@@ -249,7 +147,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateInviteRequest"
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.CreateInviteRequest"
                         }
                     }
                 ],
@@ -257,7 +155,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.InviteResponse"
+                            "$ref": "#/definitions/nrs-authentication_internal_dto.InviteResponse"
                         }
                     },
                     "400": {
@@ -324,7 +222,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.InviteResponse"
+                                "$ref": "#/definitions/nrs-authentication_internal_dto.InviteResponse"
                             }
                         }
                     },
@@ -351,10 +249,64 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/me/organizations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the organizations the authenticated user belongs to.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "List authenticated user's organizations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/nrs-authentication_internal_dto.UserOrganizationMappingResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "dto.AcceptInviteResponse": {
+        "nrs-authentication_internal_dto.AcceptInviteResponse": {
             "type": "object",
             "properties": {
                 "invite": {},
@@ -366,26 +318,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.AttachRoleRequest": {
-            "type": "object",
-            "required": [
-                "groupName",
-                "username"
-            ],
-            "properties": {
-                "groupName": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 3
-                },
-                "username": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 3
-                }
-            }
-        },
-        "dto.AttachRoleResponse": {
+        "nrs-authentication_internal_dto.AttachRoleResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -396,18 +329,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.AttributeTypeSwagger": {
-            "type": "object",
-            "properties": {
-                "Name": {
-                    "type": "string"
-                },
-                "Value": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateInviteRequest": {
+        "nrs-authentication_internal_dto.CreateInviteRequest": {
             "type": "object",
             "required": [
                 "organizationId",
@@ -436,7 +358,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.InviteResponse": {
+        "nrs-authentication_internal_dto.InviteResponse": {
             "type": "object",
             "properties": {
                 "accepted": {
@@ -445,11 +367,8 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "hostEmail": {
-                    "type": "string"
-                },
                 "id": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "organizationId": {
                     "type": "string"
@@ -471,65 +390,31 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ListUsersOutputSwagger": {
+        "nrs-authentication_internal_dto.UserOrganizationMappingResponse": {
             "type": "object",
             "properties": {
-                "PaginationToken": {
-                    "type": "string"
-                },
-                "ResultMetadata": {
-                    "$ref": "#/definitions/dto.MetadataSwagger"
-                },
-                "Users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.UserTypeSwagger"
-                    }
-                }
-            }
-        },
-        "dto.MFAOptionTypeSwagger": {
-            "type": "object",
-            "properties": {
-                "AttributeName": {
-                    "type": "string"
-                },
-                "DeliveryMedium": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.MetadataSwagger": {
-            "type": "object"
-        },
-        "dto.UserTypeSwagger": {
-            "type": "object",
-            "properties": {
-                "Attributes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.AttributeTypeSwagger"
-                    }
-                },
-                "Enabled": {
+                "active": {
                     "type": "boolean"
                 },
-                "MFAOptions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.MFAOptionTypeSwagger"
-                    }
-                },
-                "UserCreateDate": {
+                "createdAt": {
                     "type": "string"
                 },
-                "UserLastModifiedDate": {
+                "id": {
                     "type": "string"
                 },
-                "UserStatus": {
+                "organizationId": {
                     "type": "string"
                 },
-                "Username": {
+                "organizationName": {
+                    "type": "string"
+                },
+                "roleName": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userEmail": {
                     "type": "string"
                 }
             }

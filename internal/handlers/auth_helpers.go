@@ -72,6 +72,16 @@ func requireInviteAdmin(c *gin.Context, cfg *config.Config) (tokenClaims, bool) 
 	return tokenClaims{}, false
 }
 
+func requireAuthenticated(c *gin.Context, cfg *config.Config) (tokenClaims, bool) {
+	claims, err := validateAndExtractClaims(c.GetHeader("Authorization"), cfg)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization token"})
+		return tokenClaims{}, false
+	}
+
+	return claims, true
+}
+
 func validateAndExtractClaims(authorization string, cfg *config.Config) (tokenClaims, error) {
 	token := strings.TrimSpace(authorization)
 	if token == "" {

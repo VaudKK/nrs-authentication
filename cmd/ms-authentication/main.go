@@ -61,26 +61,24 @@ func main() {
 	router.Use(middleware.RateLimiter())
 
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:5173", "https://nrs-authentication-production.up.railway.app", "https://morder-referral-production.up.railway.app"} // Specify allowed origins
-	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}                                                                                            // Specify allowed methods
-	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept"}                                                                                  // Specify allowed headers
-	corsConfig.ExposeHeaders = []string{"Content-Length"}                                                                                                                    // Headers the browser should be able to access
-	corsConfig.AllowCredentials = true                                                                                                                                       // Allow cookies/credentials to be sent cross-origin
-	corsConfig.MaxAge = 12 * time.Hour                                                                                                                                       // Cache preflight requests
+	corsConfig.AllowOrigins = appConfig.CORSAllowedOrigins
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}           // Specify allowed methods
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Authorization", "Accept"} // Specify allowed headers
+	corsConfig.ExposeHeaders = []string{"Content-Length"}                                   // Headers the browser should be able to access
+	corsConfig.AllowCredentials = true                                                      // Allow cookies/credentials to be sent cross-origin
+	corsConfig.MaxAge = 12 * time.Hour                                                      // Cache preflight requests
 
 	router.Use(cors.New(corsConfig))
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	router.GET("/api/v1/auth/get-user", authenticationHandler.GetUser)
 	router.GET("/api/v1/auth/invites/:inviteId/accept", authenticationHandler.AcceptInvite)
 	router.POST("/api/v1/auth/invites/:inviteId/attach-role", authenticationHandler.AttachRoleByInvite)
 
 	authenticationGroup := router.Group("/api/v1/auth/me")
 	{
-		authenticationGroup.POST("/attach-role", authenticationHandler.AttachRole)
-		authenticationGroup.GET("/get-facility-users", authenticationHandler.GetFacilityUsers)
 		authenticationGroup.POST("/invites", authenticationHandler.CreateInvite)
 		authenticationGroup.GET("/invites/pending", authenticationHandler.ListPendingInvites)
+		authenticationGroup.GET("/organizations", authenticationHandler.ListMyOrganizations)
 	}
 
 	log.Info(fmt.Sprintf("Starting server on port %s", appConfig.Port))

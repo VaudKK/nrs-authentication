@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
@@ -30,6 +31,7 @@ type Config struct {
 	SMTPPassword       string
 	SMTPSender         string
 	InviteURL          string
+	CORSAllowedOrigins []string
 }
 
 func LoadConfig(log *logrus.Logger) *Config {
@@ -67,5 +69,23 @@ func LoadConfig(log *logrus.Logger) *Config {
 		SMTPPassword:       os.Getenv("SMTP_PASSWORD"),
 		SMTPSender:         os.Getenv("SMTP_SENDER"),
 		InviteURL:          os.Getenv("INVITE_URL"),
+		CORSAllowedOrigins: splitCommaSeparated(os.Getenv("CORS_ALLOWED_ORIGINS")),
 	}
+}
+
+func splitCommaSeparated(value string) []string {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+
+	parts := strings.Split(value, ",")
+	output := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			output = append(output, trimmed)
+		}
+	}
+
+	return output
 }
