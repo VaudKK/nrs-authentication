@@ -34,6 +34,9 @@ func init() {
 // @description Handles authentication utilities
 // @host localhost:8080
 // @basePath /api/v1/auth
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	var appConfig = config.LoadConfig(log)
 
@@ -44,8 +47,12 @@ func main() {
 	}
 
 	var awsService = service.NewAwsService(appConfig, log, cfg)
+	inviteService, err := service.NewInviteService(appConfig, log, awsService)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	var authenticationHandler = handlers.NewAuthenticationHandler(&awsService)
+	var authenticationHandler = handlers.NewAuthenticationHandler(&awsService, inviteService, appConfig)
 
 	router := gin.New()
 
@@ -65,11 +72,15 @@ func main() {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api/v1/auth/get-user", authenticationHandler.GetUser)
+	router.GET("/api/v1/auth/invites/:inviteId/accept", authenticationHandler.AcceptInvite)
+	router.POST("/api/v1/auth/invites/:inviteId/attach-role", authenticationHandler.AttachRoleByInvite)
 
 	authenticationGroup := router.Group("/api/v1/auth/me")
 	{
 		authenticationGroup.POST("/attach-role", authenticationHandler.AttachRole)
 		authenticationGroup.GET("/get-facility-users", authenticationHandler.GetFacilityUsers)
+		authenticationGroup.POST("/invites", authenticationHandler.CreateInvite)
+		authenticationGroup.GET("/invites/pending", authenticationHandler.ListPendingInvites)
 	}
 
 	log.Info(fmt.Sprintf("Starting server on port %s", appConfig.Port))

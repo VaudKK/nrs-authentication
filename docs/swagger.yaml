@@ -1,50 +1,117 @@
 basePath: /api/v1/auth
 definitions:
-  nrs-authentication_internal_dto.AttachRoleResponse:
+  dto.AcceptInviteResponse:
+    properties:
+      invite: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.AttachRoleRequest:
+    properties:
+      groupName:
+        maxLength: 100
+        minLength: 3
+        type: string
+      username:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - groupName
+    - username
+    type: object
+  dto.AttachRoleResponse:
     properties:
       message:
         type: string
       success:
         type: boolean
     type: object
-  nrs-authentication_internal_dto.AttributeTypeSwagger:
+  dto.AttributeTypeSwagger:
     properties:
       Name:
         type: string
       Value:
         type: string
     type: object
-  nrs-authentication_internal_dto.ListUsersOutputSwagger:
+  dto.CreateInviteRequest:
+    properties:
+      organizationId:
+        maxLength: 100
+        minLength: 1
+        type: string
+      organizationName:
+        maxLength: 255
+        minLength: 1
+        type: string
+      roleName:
+        maxLength: 100
+        minLength: 3
+        type: string
+      targetEmail:
+        type: string
+    required:
+    - organizationId
+    - organizationName
+    - roleName
+    - targetEmail
+    type: object
+  dto.InviteResponse:
+    properties:
+      accepted:
+        type: boolean
+      createdAt:
+        type: string
+      hostEmail:
+        type: string
+      id:
+        type: integer
+      organizationId:
+        type: string
+      organizationName:
+        type: string
+      roleName:
+        type: string
+      sent:
+        type: boolean
+      targetEmail:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  dto.ListUsersOutputSwagger:
     properties:
       PaginationToken:
         type: string
       ResultMetadata:
-        $ref: '#/definitions/nrs-authentication_internal_dto.MetadataSwagger'
+        $ref: '#/definitions/dto.MetadataSwagger'
       Users:
         items:
-          $ref: '#/definitions/nrs-authentication_internal_dto.UserTypeSwagger'
+          $ref: '#/definitions/dto.UserTypeSwagger'
         type: array
     type: object
-  nrs-authentication_internal_dto.MFAOptionTypeSwagger:
+  dto.MFAOptionTypeSwagger:
     properties:
       AttributeName:
         type: string
       DeliveryMedium:
         type: string
     type: object
-  nrs-authentication_internal_dto.MetadataSwagger:
+  dto.MetadataSwagger:
     type: object
-  nrs-authentication_internal_dto.UserTypeSwagger:
+  dto.UserTypeSwagger:
     properties:
       Attributes:
         items:
-          $ref: '#/definitions/nrs-authentication_internal_dto.AttributeTypeSwagger'
+          $ref: '#/definitions/dto.AttributeTypeSwagger'
         type: array
       Enabled:
         type: boolean
       MFAOptions:
         items:
-          $ref: '#/definitions/nrs-authentication_internal_dto.MFAOptionTypeSwagger'
+          $ref: '#/definitions/dto.MFAOptionTypeSwagger'
         type: array
       UserCreateDate:
         type: string
@@ -55,81 +122,6 @@ definitions:
       Username:
         type: string
     type: object
-  types.AttributeType:
-    properties:
-      name:
-        description: The name of the attribute, for example email or custom:department .
-        type: string
-      value:
-        description: The value of the attribute.
-        type: string
-    type: object
-  types.DeliveryMediumType:
-    enum:
-    - SMS
-    - EMAIL
-    type: string
-    x-enum-varnames:
-    - DeliveryMediumTypeSms
-    - DeliveryMediumTypeEmail
-  types.MFAOptionType:
-    properties:
-      attributeName:
-        description: The attribute name of the MFA option type. The only valid value is phone_number .
-        type: string
-      deliveryMedium:
-        allOf:
-        - $ref: '#/definitions/types.DeliveryMediumType'
-        description: The delivery medium to send the MFA code.
-    type: object
-  types.UserStatusType:
-    enum:
-    - UNCONFIRMED
-    - CONFIRMED
-    - ARCHIVED
-    - COMPROMISED
-    - UNKNOWN
-    - RESET_REQUIRED
-    - FORCE_CHANGE_PASSWORD
-    - EXTERNAL_PROVIDER
-    type: string
-    x-enum-varnames:
-    - UserStatusTypeUnconfirmed
-    - UserStatusTypeConfirmed
-    - UserStatusTypeArchived
-    - UserStatusTypeCompromised
-    - UserStatusTypeUnknown
-    - UserStatusTypeResetRequired
-    - UserStatusTypeForceChangePassword
-    - UserStatusTypeExternalProvider
-  types.UserType:
-    properties:
-      attributes:
-        description: Names and values of a user's attributes, for example email .
-        items:
-          $ref: '#/definitions/types.AttributeType'
-        type: array
-      enabled:
-        description: Indicates whether the user's account is enabled or disabled.
-        type: boolean
-      mfaoptions:
-        description: The user's MFA configuration.
-        items:
-          $ref: '#/definitions/types.MFAOptionType'
-        type: array
-      userCreateDate:
-        description: The date and time when the item was created.
-        type: string
-      userLastModifiedDate:
-        description: The date and time when the item was modified.
-        type: string
-      userStatus:
-        allOf:
-        - $ref: '#/definitions/types.UserStatusType'
-      username:
-        description: The user's username.
-        type: string
-    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -137,21 +129,6 @@ info:
   title: nrs-authentication
   version: "1.0"
 paths:
-  /attach-role:
-    post:
-      consumes:
-      - application/json
-      description: attaches a role to a user
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
-      summary: Attach a role to a user
-      tags:
-      - roles
   /get-user:
     get:
       consumes:
@@ -169,10 +146,94 @@ paths:
         "200":
           description: User lookup result.
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.ListUsersOutputSwagger'
+            $ref: '#/definitions/dto.ListUsersOutputSwagger'
       summary: Get user by email
       tags:
       - users
+  /invites/{inviteId}/accept:
+    get:
+      consumes:
+      - application/json
+      description: Marks an invite as accepted.
+      parameters:
+      - description: Invite ID
+        in: path
+        name: inviteId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AcceptInviteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.AcceptInviteResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.AcceptInviteResponse'
+      summary: Accept invite
+      tags:
+      - invites
+  /invites/{inviteId}/attach-role:
+    post:
+      consumes:
+      - application/json
+      description: Attaches the invited role after the invite is accepted.
+      parameters:
+      - description: Invite ID
+        in: path
+        name: inviteId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AttachRoleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.AttachRoleResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.AttachRoleResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.AttachRoleResponse'
+      summary: Attach role from invite
+      tags:
+      - invites
+  /me/attach-role:
+    post:
+      consumes:
+      - application/json
+      description: attaches a role to a user
+      parameters:
+      - description: Attach role request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AttachRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AttachRoleResponse'
+      summary: Attach a role to a user
+      tags:
+      - roles
   /me/get-facility-users:
     get:
       consumes:
@@ -196,9 +257,103 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/types.UserType'
+              $ref: '#/definitions/dto.UserTypeSwagger'
             type: array
       summary: Get users for a facility
       tags:
       - users
+  /me/invites:
+    post:
+      consumes:
+      - application/json
+      description: Creates an invite, sends the email, and stores invite metadata.
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Create invite request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.InviteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Invite a user by email
+      tags:
+      - invites
+  /me/invites/pending:
+    get:
+      consumes:
+      - application/json
+      description: Returns all invites that have not been accepted.
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Organization ID
+        in: query
+        name: organizationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.InviteResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List pending invites
+      tags:
+      - invites
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

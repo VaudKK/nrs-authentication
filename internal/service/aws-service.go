@@ -5,6 +5,7 @@ import (
 	"errors"
 	"nrs-authentication/internal/config"
 	"nrs-authentication/internal/dto"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
@@ -18,6 +19,7 @@ type AwsService interface {
 	AttachRole(dto.AttachRoleRequest) (dto.AttachRoleResponse, error)
 	GetFacilityUsers(string, string) ([]types.UserType, error)
 	GetUser(string) (*cognitoidentityprovider.ListUsersOutput, error)
+	GetUserProfile(string) (*cognitoidentityprovider.GetUserOutput, error)
 }
 
 type awsService struct {
@@ -98,6 +100,26 @@ func (s *awsService) GetUser(email string) (*cognitoidentityprovider.ListUsersOu
 		s.Log.WithError(err).Error("Error while fetching user")
 		return nil, err
 	}
+	return response, nil
+}
+
+func (s *awsService) GetUserProfile(accessToken string) (*cognitoidentityprovider.GetUserOutput, error) {
+
+	ctx := context.TODO()
+
+	trimmedToken := strings.TrimSpace(accessToken)
+	if strings.HasPrefix(strings.ToLower(trimmedToken), "bearer ") {
+		trimmedToken = strings.TrimSpace(trimmedToken[7:])
+	}
+
+	response, err := client.GetUser(ctx, &cognitoidentityprovider.GetUserInput{
+		AccessToken: aws.String(trimmedToken),
+	})
+	if err != nil {
+		s.Log.WithError(err).Error("Error while fetching authenticated user profile")
+		return nil, err
+	}
+
 	return response, nil
 }
 

@@ -15,29 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/attach-role": {
-            "post": {
-                "description": "attaches a role to a user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "roles"
-                ],
-                "summary": "Attach a role to a user",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/get-user": {
             "get": {
                 "description": "Returns a user by email.",
@@ -64,7 +41,135 @@ const docTemplate = `{
                     "200": {
                         "description": "User lookup result.",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.ListUsersOutputSwagger"
+                            "$ref": "#/definitions/dto.ListUsersOutputSwagger"
+                        }
+                    }
+                }
+            }
+        },
+        "/invites/{inviteId}/accept": {
+            "get": {
+                "description": "Marks an invite as accepted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invites"
+                ],
+                "summary": "Accept invite",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invite ID",
+                        "name": "inviteId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/invites/{inviteId}/attach-role": {
+            "post": {
+                "description": "Attaches the invited role after the invite is accepted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invites"
+                ],
+                "summary": "Attach role from invite",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invite ID",
+                        "name": "inviteId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/me/attach-role": {
+            "post": {
+                "description": "attaches a role to a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "roles"
+                ],
+                "summary": "Attach a role to a user",
+                "parameters": [
+                    {
+                        "description": "Attach role request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AttachRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
                         }
                     }
                 }
@@ -105,8 +210,143 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/types.UserType"
+                                "$ref": "#/definitions/dto.UserTypeSwagger"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/invites": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates an invite, sends the email, and stores invite metadata.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invites"
+                ],
+                "summary": "Invite a user by email",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Create invite request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.InviteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/me/invites/pending": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns all invites that have not been accepted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invites"
+                ],
+                "summary": "List pending invites",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.InviteResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -114,7 +354,38 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "nrs-authentication_internal_dto.AttachRoleResponse": {
+        "dto.AcceptInviteResponse": {
+            "type": "object",
+            "properties": {
+                "invite": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.AttachRoleRequest": {
+            "type": "object",
+            "required": [
+                "groupName",
+                "username"
+            ],
+            "properties": {
+                "groupName": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                }
+            }
+        },
+        "dto.AttachRoleResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -125,7 +396,7 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.AttributeTypeSwagger": {
+        "dto.AttributeTypeSwagger": {
             "type": "object",
             "properties": {
                 "Name": {
@@ -136,24 +407,88 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.ListUsersOutputSwagger": {
+        "dto.CreateInviteRequest": {
+            "type": "object",
+            "required": [
+                "organizationId",
+                "organizationName",
+                "roleName",
+                "targetEmail"
+            ],
+            "properties": {
+                "organizationId": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "organizationName": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                },
+                "roleName": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "targetEmail": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.InviteResponse": {
+            "type": "object",
+            "properties": {
+                "accepted": {
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "hostEmail": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "organizationName": {
+                    "type": "string"
+                },
+                "roleName": {
+                    "type": "string"
+                },
+                "sent": {
+                    "type": "boolean"
+                },
+                "targetEmail": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ListUsersOutputSwagger": {
             "type": "object",
             "properties": {
                 "PaginationToken": {
                     "type": "string"
                 },
                 "ResultMetadata": {
-                    "$ref": "#/definitions/nrs-authentication_internal_dto.MetadataSwagger"
+                    "$ref": "#/definitions/dto.MetadataSwagger"
                 },
                 "Users": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/nrs-authentication_internal_dto.UserTypeSwagger"
+                        "$ref": "#/definitions/dto.UserTypeSwagger"
                     }
                 }
             }
         },
-        "nrs-authentication_internal_dto.MFAOptionTypeSwagger": {
+        "dto.MFAOptionTypeSwagger": {
             "type": "object",
             "properties": {
                 "AttributeName": {
@@ -164,16 +499,16 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.MetadataSwagger": {
+        "dto.MetadataSwagger": {
             "type": "object"
         },
-        "nrs-authentication_internal_dto.UserTypeSwagger": {
+        "dto.UserTypeSwagger": {
             "type": "object",
             "properties": {
                 "Attributes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/nrs-authentication_internal_dto.AttributeTypeSwagger"
+                        "$ref": "#/definitions/dto.AttributeTypeSwagger"
                     }
                 },
                 "Enabled": {
@@ -182,7 +517,7 @@ const docTemplate = `{
                 "MFAOptions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/nrs-authentication_internal_dto.MFAOptionTypeSwagger"
+                        "$ref": "#/definitions/dto.MFAOptionTypeSwagger"
                     }
                 },
                 "UserCreateDate": {
@@ -198,112 +533,13 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "types.AttributeType": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "description": "The name of the attribute, for example email or custom:department .",
-                    "type": "string"
-                },
-                "value": {
-                    "description": "The value of the attribute.",
-                    "type": "string"
-                }
-            }
-        },
-        "types.DeliveryMediumType": {
-            "type": "string",
-            "enum": [
-                "SMS",
-                "EMAIL"
-            ],
-            "x-enum-varnames": [
-                "DeliveryMediumTypeSms",
-                "DeliveryMediumTypeEmail"
-            ]
-        },
-        "types.MFAOptionType": {
-            "type": "object",
-            "properties": {
-                "attributeName": {
-                    "description": "The attribute name of the MFA option type. The only valid value is phone_number .",
-                    "type": "string"
-                },
-                "deliveryMedium": {
-                    "description": "The delivery medium to send the MFA code.",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.DeliveryMediumType"
-                        }
-                    ]
-                }
-            }
-        },
-        "types.UserStatusType": {
-            "type": "string",
-            "enum": [
-                "UNCONFIRMED",
-                "CONFIRMED",
-                "ARCHIVED",
-                "COMPROMISED",
-                "UNKNOWN",
-                "RESET_REQUIRED",
-                "FORCE_CHANGE_PASSWORD",
-                "EXTERNAL_PROVIDER"
-            ],
-            "x-enum-varnames": [
-                "UserStatusTypeUnconfirmed",
-                "UserStatusTypeConfirmed",
-                "UserStatusTypeArchived",
-                "UserStatusTypeCompromised",
-                "UserStatusTypeUnknown",
-                "UserStatusTypeResetRequired",
-                "UserStatusTypeForceChangePassword",
-                "UserStatusTypeExternalProvider"
-            ]
-        },
-        "types.UserType": {
-            "type": "object",
-            "properties": {
-                "attributes": {
-                    "description": "Names and values of a user's attributes, for example email .",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.AttributeType"
-                    }
-                },
-                "enabled": {
-                    "description": "Indicates whether the user's account is enabled or disabled.",
-                    "type": "boolean"
-                },
-                "mfaoptions": {
-                    "description": "The user's MFA configuration.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/types.MFAOptionType"
-                    }
-                },
-                "userCreateDate": {
-                    "description": "The date and time when the item was created.",
-                    "type": "string"
-                },
-                "userLastModifiedDate": {
-                    "description": "The date and time when the item was modified.",
-                    "type": "string"
-                },
-                "userStatus": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.UserStatusType"
-                        }
-                    ]
-                },
-                "username": {
-                    "description": "The user's username.",
-                    "type": "string"
-                }
-            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
