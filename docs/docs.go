@@ -41,25 +41,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
                         }
                     }
                 }
@@ -91,25 +91,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
                         }
                     }
                 }
@@ -147,7 +147,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.CreateInviteRequest"
+                            "$ref": "#/definitions/dto.CreateInviteRequest"
                         }
                     }
                 ],
@@ -155,7 +155,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.InviteResponse"
+                            "$ref": "#/definitions/dto.InviteResponse"
                         }
                     },
                     "400": {
@@ -222,7 +222,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/nrs-authentication_internal_dto.InviteResponse"
+                                "$ref": "#/definitions/dto.InviteResponse"
                             }
                         }
                     },
@@ -283,7 +283,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/nrs-authentication_internal_dto.UserOrganizationMappingResponse"
+                                "$ref": "#/definitions/dto.UserOrganizationMappingResponse"
                             }
                         }
                     },
@@ -303,10 +303,78 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/me/organizations/members": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the members of an organization for authorized admin roles.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "List organization members",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organizationId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.UserOrganizationMappingResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "nrs-authentication_internal_dto.AcceptInviteResponse": {
+        "dto.AcceptInviteResponse": {
             "type": "object",
             "properties": {
                 "invite": {},
@@ -318,7 +386,7 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.AttachRoleResponse": {
+        "dto.AttachRoleResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -329,7 +397,7 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.CreateInviteRequest": {
+        "dto.CreateInviteRequest": {
             "type": "object",
             "required": [
                 "organizationId",
@@ -358,7 +426,7 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.InviteResponse": {
+        "dto.InviteResponse": {
             "type": "object",
             "properties": {
                 "accepted": {
@@ -390,7 +458,7 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.UserOrganizationMappingResponse": {
+        "dto.UserOrganizationMappingResponse": {
             "type": "object",
             "properties": {
                 "active": {

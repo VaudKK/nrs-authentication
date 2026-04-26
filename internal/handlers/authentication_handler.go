@@ -63,7 +63,45 @@ func (h AuthenticationHandler) CreateInvite(c *gin.Context) {
 
 	response, err := h.InviteService.CreateInvite(request, hostEmail)
 	if err != nil {
+		if errors.Is(err, service.ErrOrganizationNotFound) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "invite": response})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// @Summary List organization members
+// @Description Returns the members of an organization for authorized admin roles.
+// @Tags organizations
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Param organizationId query string true "Organization ID"
+// @Security BearerAuth
+// @Success 200  {object}  []dto.UserOrganizationMappingResponse
+// @Failure 400  {object}  map[string]interface{}
+// @Failure 401  {object}  map[string]interface{}
+// @Failure 403  {object}  map[string]interface{}
+// @Router /me/organizations/members [get]
+func (h AuthenticationHandler) ListOrganizationMembers(c *gin.Context) {
+	_, ok := requireInviteAdmin(c, h.Config)
+	if !ok {
+		return
+	}
+
+	organizationID := c.Query("organizationId")
+	if organizationID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing organizationId in query param"})
+		return
+	}
+
+	response, err := h.InviteService.ListOrganizationMembers(organizationID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 

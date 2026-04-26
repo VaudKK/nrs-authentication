@@ -1,6 +1,6 @@
 basePath: /api/v1/auth
 definitions:
-  nrs-authentication_internal_dto.AcceptInviteResponse:
+  dto.AcceptInviteResponse:
     properties:
       invite: {}
       message:
@@ -8,14 +8,14 @@ definitions:
       success:
         type: boolean
     type: object
-  nrs-authentication_internal_dto.AttachRoleResponse:
+  dto.AttachRoleResponse:
     properties:
       message:
         type: string
       success:
         type: boolean
     type: object
-  nrs-authentication_internal_dto.CreateInviteRequest:
+  dto.CreateInviteRequest:
     properties:
       organizationId:
         maxLength: 100
@@ -37,7 +37,7 @@ definitions:
     - roleName
     - targetEmail
     type: object
-  nrs-authentication_internal_dto.InviteResponse:
+  dto.InviteResponse:
     properties:
       accepted:
         type: boolean
@@ -58,7 +58,7 @@ definitions:
       updatedAt:
         type: string
     type: object
-  nrs-authentication_internal_dto.UserOrganizationMappingResponse:
+  dto.UserOrganizationMappingResponse:
     properties:
       active:
         type: boolean
@@ -101,19 +101,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse'
+            $ref: '#/definitions/dto.AcceptInviteResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse'
+            $ref: '#/definitions/dto.AcceptInviteResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse'
+            $ref: '#/definitions/dto.AcceptInviteResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse'
+            $ref: '#/definitions/dto.AcceptInviteResponse'
       summary: Accept invite
       tags:
       - invites
@@ -134,19 +134,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
+            $ref: '#/definitions/dto.AttachRoleResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
+            $ref: '#/definitions/dto.AttachRoleResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
+            $ref: '#/definitions/dto.AttachRoleResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
+            $ref: '#/definitions/dto.AttachRoleResponse'
       summary: Attach role from invite
       tags:
       - invites
@@ -166,14 +166,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/nrs-authentication_internal_dto.CreateInviteRequest'
+          $ref: '#/definitions/dto.CreateInviteRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.InviteResponse'
+            $ref: '#/definitions/dto.InviteResponse'
         "400":
           description: Bad Request
           schema:
@@ -217,7 +217,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/nrs-authentication_internal_dto.InviteResponse'
+              $ref: '#/definitions/dto.InviteResponse'
             type: array
         "400":
           description: Bad Request
@@ -257,7 +257,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/nrs-authentication_internal_dto.UserOrganizationMappingResponse'
+              $ref: '#/definitions/dto.UserOrganizationMappingResponse'
             type: array
         "400":
           description: Bad Request
@@ -272,6 +272,51 @@ paths:
       security:
       - BearerAuth: []
       summary: List authenticated user's organizations
+      tags:
+      - organizations
+  /me/organizations/members:
+    get:
+      consumes:
+      - application/json
+      description: Returns the members of an organization for authorized admin roles.
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Organization ID
+        in: query
+        name: organizationId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserOrganizationMappingResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List organization members
       tags:
       - organizations
 securityDefinitions:

@@ -15,15 +15,17 @@ import (
 )
 
 var (
-	ErrInviteNotFound    = errors.New("invite not found")
-	ErrInviteNotAccepted = errors.New("invite has not been accepted")
-	ErrInviteAccepted    = errors.New("invite has already been accepted")
+	ErrInviteNotFound       = errors.New("invite not found")
+	ErrInviteNotAccepted    = errors.New("invite has not been accepted")
+	ErrInviteAccepted       = errors.New("invite has already been accepted")
+	ErrOrganizationNotFound = errors.New("organization not found")
 )
 
 type InviteService interface {
 	CreateInvite(dto.CreateInviteRequest, string) (dto.InviteResponse, error)
 	ListPendingInvites(string) ([]dto.InviteResponse, error)
 	ListUserOrganizationsByEmail(string) ([]dto.UserOrganizationMappingResponse, error)
+	ListOrganizationMembers(string) ([]dto.UserOrganizationMappingResponse, error)
 	AcceptInvite(string) (dto.InviteResponse, error)
 	AttachRoleByInviteID(string) (dto.AttachRoleResponse, error)
 }
@@ -41,6 +43,11 @@ type inviteTemplateData struct {
 	Host         string
 	Organization string
 	JoinLink     string
+}
+
+type organizationRecord struct {
+	ID   string `gorm:"column:id"`
+	Name string `gorm:"column:name"`
 }
 
 func NewInviteService(cfg *config.Config, log *logrus.Logger, awsService AwsService) (InviteService, error) {
@@ -87,12 +94,17 @@ func NewInviteService(cfg *config.Config, log *logrus.Logger, awsService AwsServ
 }
 
 func (s *inviteService) CreateInvite(request dto.CreateInviteRequest, hostEmail string) (dto.InviteResponse, error) {
+	organization, err := s.findOrganizationByID(request.OrganizationID)
+	if err != nil {
+		return dto.InviteResponse{}, err
+	}
+
 	invite := model.Invite{
 		TargetEmail:      strings.TrimSpace(strings.ToLower(request.TargetEmail)),
 		HostEmail:        strings.TrimSpace(strings.ToLower(hostEmail)),
 		RoleName:         strings.TrimSpace(request.RoleName),
-		OrganizationID:   strings.TrimSpace(request.OrganizationID),
-		OrganizationName: strings.TrimSpace(request.OrganizationName),
+		OrganizationID:   strings.TrimSpace(organization.ID),
+		OrganizationName: strings.TrimSpace(organization.Name),
 	}
 
 	if err := s.db.Create(&invite).Error; err != nil {
@@ -137,6 +149,20 @@ func (s *inviteService) ListPendingInvites(organizationID string) ([]dto.InviteR
 func (s *inviteService) ListUserOrganizationsByEmail(userEmail string) ([]dto.UserOrganizationMappingResponse, error) {
 	var mappings []model.UserOrganizationMapping
 	if err := s.db.Where("user_email = ?", strings.TrimSpace(strings.ToLower(userEmail))).Order("organization_name asc").Find(&mappings).Error; err != nil {
+		return nil, err
+	}
+
+	response := make([]dto.UserOrganizationMappingResponse, 0, len(mappings))
+	for _, mapping := range mappings {
+		response = append(response, mapUserOrganizationMapping(mapping))
+	}
+
+	return response, nil
+}
+
+func (s *inviteService) ListOrganizationMembers(organizationID string) ([]dto.UserOrganizationMappingResponse, error) {
+	var mappings []model.UserOrganizationMapping
+	if err := s.db.Where("organization_id = ?", strings.TrimSpace(organizationID)).Order("user_email asc").Find(&mappings).Error; err != nil {
 		return nil, err
 	}
 
@@ -223,6 +249,22 @@ func (s *inviteService) buildInviteJoinLink(inviteID string) string {
 
 	base = strings.TrimRight(base, "/")
 	return fmt.Sprintf("%s/%s", base, inviteID)
+}
+
+func (s *inviteService) findOrganizationByID(organizationID string) (organizationRecord, error) {
+	var organization organizationRecord
+	err := s.db.Table("organizations").
+		Select("id", "name").
+		Where("id = ?", strings.TrimSpace(organizationID)).
+		First(&organization).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return organizationRecord{}, ErrOrganizationNotFound
+		}
+		return organizationRecord{}, err
+	}
+
+	return organization, nil
 }
 
 func mapInvite(invite model.Invite) dto.InviteResponse {

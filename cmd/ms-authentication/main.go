@@ -79,6 +79,7 @@ func main() {
 		authenticationGroup.POST("/invites", authenticationHandler.CreateInvite)
 		authenticationGroup.GET("/invites/pending", authenticationHandler.ListPendingInvites)
 		authenticationGroup.GET("/organizations", authenticationHandler.ListMyOrganizations)
+		authenticationGroup.GET("/organizations/members", authenticationHandler.ListOrganizationMembers)
 	}
 
 	log.Info(fmt.Sprintf("Starting server on port %s", appConfig.Port))
