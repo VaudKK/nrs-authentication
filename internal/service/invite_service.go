@@ -232,7 +232,7 @@ func (s *inviteService) AttachRoleByInviteID(inviteID string) (dto.AttachRoleRes
 
 func (s *inviteService) findInvite(inviteID string) (model.Invite, error) {
 	var invite model.Invite
-	if err := s.db.First(&invite, inviteID).Error; err != nil {
+	if err := s.db.Where("id = ?", strings.TrimSpace(inviteID)).First(&invite).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return model.Invite{}, ErrInviteNotFound
 		}
