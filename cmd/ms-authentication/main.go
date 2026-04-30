@@ -73,6 +73,7 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api/v1/auth/invites/:inviteId/accept", authenticationHandler.AcceptInvite)
 	router.POST("/api/v1/auth/invites/:inviteId/attach-role", authenticationHandler.AttachRoleByInvite)
+	router.GET("/api/v1/auth/check-email", authenticationHandler.CheckEmail)
 
 	authenticationGroup := router.Group("/api/v1/auth/me")
 	{

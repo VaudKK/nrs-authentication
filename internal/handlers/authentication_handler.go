@@ -254,3 +254,30 @@ func (h AuthenticationHandler) AttachRoleByInvite(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+// @Summary Get user by email
+// @Description Fetches a user from Cognito by email. Primarily for testing purposes.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param email query string true "User email"
+// @Success 200  {object}  dto.CheckEmailResponse
+// @Failure 400  {object}  map[string]interface{}
+// @Router /check-email [get]
+func (h AuthenticationHandler) CheckEmail(c *gin.Context) {
+
+	email := c.Query("email")
+
+	if email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "email query parameter is required"})
+		return
+	}
+
+	response, err := h.AwsService.GetUser(email)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.MapCheckEmailResponse(response))
+}
