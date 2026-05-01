@@ -8,6 +8,7 @@ import (
 	"nrs-authentication/internal/mailer"
 	"nrs-authentication/internal/model"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -18,6 +19,7 @@ var (
 	ErrInviteNotFound       = errors.New("invite not found")
 	ErrInviteNotAccepted    = errors.New("invite has not been accepted")
 	ErrInviteAccepted       = errors.New("invite has already been accepted")
+	ErrInviteExpired        = errors.New("invite has expired")
 	ErrOrganizationNotFound = errors.New("organization not found")
 )
 
@@ -105,6 +107,11 @@ func (s *inviteService) CreateInvite(request dto.CreateInviteRequest, hostEmail 
 		RoleName:         strings.TrimSpace(request.RoleName),
 		OrganizationID:   strings.TrimSpace(organization.ID),
 		OrganizationName: strings.TrimSpace(organization.Name),
+		ExpiresAt:        s.resolveInviteExpiry(request.ExpiresAt),
+	}
+
+	if invite.ExpiresAt == nil || !invite.ExpiresAt.After(time.Now().UTC()) {
+		return dto.InviteResponse{}, errors.New("invite expiry must be in the future")
 	}
 
 	if err := s.db.Create(&invite).Error; err != nil {
@@ -134,7 +141,8 @@ func (s *inviteService) CreateInvite(request dto.CreateInviteRequest, hostEmail 
 
 func (s *inviteService) ListPendingInvites(organizationID string) ([]dto.InviteResponse, error) {
 	var invites []model.Invite
-	if err := s.db.Where("accepted = ? AND organization_id = ?", false, strings.TrimSpace(organizationID)).Order("created_at desc").Find(&invites).Error; err != nil {
+	now := time.Now().UTC()
+	if err := s.db.Where("accepted = ? AND organization_id = ? AND (expires_at IS NULL OR expires_at > ?)", false, strings.TrimSpace(organizationID), now).Order("created_at desc").Find(&invites).Error; err != nil {
 		return nil, err
 	}
 
@@ -181,7 +189,11 @@ func (s *inviteService) AcceptInvite(inviteID string) (dto.InviteResponse, error
 	}
 
 	if invite.Accepted {
-		return dto.InviteResponse{}, ErrInviteAccepted
+		return mapInvite(invite), ErrInviteAccepted
+	}
+
+	if invite.ExpiresAt != nil && !invite.ExpiresAt.After(time.Now().UTC()) {
+		return mapInvite(invite), ErrInviteExpired
 	}
 
 	invite.Accepted = true
@@ -276,9 +288,25 @@ func mapInvite(invite model.Invite) dto.InviteResponse {
 		OrganizationName: invite.OrganizationName,
 		Sent:             invite.Sent,
 		Accepted:         invite.Accepted,
+		ExpiresAt:        invite.ExpiresAt,
 		CreatedAt:        invite.CreatedAt,
 		UpdatedAt:        invite.UpdatedAt,
 	}
+}
+
+func (s *inviteService) resolveInviteExpiry(requestExpiry *time.Time) *time.Time {
+	if requestExpiry != nil {
+		expiry := requestExpiry.UTC()
+		return &expiry
+	}
+
+	expiryHours := s.config.InviteExpiryHours
+	if expiryHours <= 0 {
+		expiryHours = 168
+	}
+
+	expiry := time.Now().UTC().Add(time.Duration(expiryHours) * time.Hour)
+	return &expiry
 }
 
 func mapUserOrganizationMapping(mapping model.UserOrganizationMapping) dto.UserOrganizationMappingResponse {

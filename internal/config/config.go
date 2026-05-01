@@ -31,6 +31,7 @@ type Config struct {
 	SMTPPassword       string
 	SMTPSender         string
 	InviteURL          string
+	InviteExpiryHours  int
 	CORSAllowedOrigins []string
 }
 
@@ -46,6 +47,7 @@ func LoadConfig(log *logrus.Logger) *Config {
 
 	smtpPort, _ := strconv.Atoi(os.Getenv("SMTP_PORT"))
 	postgresPort, _ := strconv.Atoi(os.Getenv("POSTGRES_PORT"))
+	inviteExpiryHours, _ := strconv.Atoi(os.Getenv("INVITE_EXPIRY_HOURS"))
 
 	return &Config{
 		AwsAccessKey:       os.Getenv("AWS_ACCESS_KEY_ID"),
@@ -69,6 +71,7 @@ func LoadConfig(log *logrus.Logger) *Config {
 		SMTPPassword:       os.Getenv("SMTP_PASSWORD"),
 		SMTPSender:         os.Getenv("SMTP_SENDER"),
 		InviteURL:          os.Getenv("INVITE_URL"),
+		InviteExpiryHours:  inviteExpiryHours,
 		CORSAllowedOrigins: splitCommaSeparated(os.Getenv("CORS_ALLOWED_ORIGINS")),
 	}
 }

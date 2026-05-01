@@ -152,6 +152,7 @@ func (h AuthenticationHandler) ListPendingInvites(c *gin.Context) {
 // @Failure 400  {object}  dto.AcceptInviteResponse
 // @Failure 404  {object}  dto.AcceptInviteResponse
 // @Failure 409  {object}  dto.AcceptInviteResponse
+// @Failure 410  {object}  dto.AcceptInviteResponse
 // @Router /invites/{inviteId}/accept [get]
 func (h AuthenticationHandler) AcceptInvite(c *gin.Context) {
 	inviteID := c.Param("inviteId")
@@ -169,9 +170,14 @@ func (h AuthenticationHandler) AcceptInvite(c *gin.Context) {
 		if errors.Is(err, service.ErrInviteAccepted) {
 			status = http.StatusConflict
 		}
+		if errors.Is(err, service.ErrInviteExpired) {
+			status = http.StatusGone
+		}
 		c.JSON(status, dto.AcceptInviteResponse{
 			Success: false,
 			Message: err.Error(),
+			Email:   invite.TargetEmail,
+			Invite:  invite,
 		})
 		return
 	}
