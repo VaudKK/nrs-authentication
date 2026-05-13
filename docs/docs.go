@@ -41,7 +41,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.CheckEmailResponse"
+                            "$ref": "#/definitions/dto.CheckEmailResponse"
                         }
                     },
                     "400": {
@@ -80,25 +80,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse"
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
+                        }
+                    },
+                    "410": {
+                        "description": "Gone",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AcceptInviteResponse"
                         }
                     }
                 }
@@ -130,25 +136,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.AttachRoleResponse"
+                            "$ref": "#/definitions/dto.AttachRoleResponse"
                         }
                     }
                 }
@@ -186,7 +192,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.CreateInviteRequest"
+                            "$ref": "#/definitions/dto.CreateInviteRequest"
                         }
                     }
                 ],
@@ -194,7 +200,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/nrs-authentication_internal_dto.InviteResponse"
+                            "$ref": "#/definitions/dto.InviteResponse"
                         }
                     },
                     "400": {
@@ -261,7 +267,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/nrs-authentication_internal_dto.InviteResponse"
+                                "$ref": "#/definitions/dto.InviteResponse"
                             }
                         }
                     },
@@ -322,7 +328,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/nrs-authentication_internal_dto.UserOrganizationMappingResponse"
+                                "$ref": "#/definitions/dto.UserOrganizationMappingResponse"
                             }
                         }
                     },
@@ -383,7 +389,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/nrs-authentication_internal_dto.UserOrganizationMappingResponse"
+                                "$ref": "#/definitions/dto.UserOrganizationMappingResponse"
                             }
                         }
                     },
@@ -413,9 +419,12 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "nrs-authentication_internal_dto.AcceptInviteResponse": {
+        "dto.AcceptInviteResponse": {
             "type": "object",
             "properties": {
+                "email": {
+                    "type": "string"
+                },
                 "invite": {},
                 "message": {
                     "type": "string"
@@ -425,7 +434,7 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.AttachRoleResponse": {
+        "dto.AttachRoleResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -436,7 +445,7 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.AttributeTypeSwagger": {
+        "dto.AttributeTypeSwagger": {
             "type": "object",
             "properties": {
                 "name": {
@@ -447,30 +456,30 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.CheckEmailResponse": {
+        "dto.CheckEmailResponse": {
             "type": "object",
             "properties": {
                 "paginationToken": {
                     "type": "string"
                 },
                 "resultMetadata": {
-                    "$ref": "#/definitions/nrs-authentication_internal_dto.MetadataSwagger"
+                    "$ref": "#/definitions/dto.MetadataSwagger"
                 },
                 "users": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/nrs-authentication_internal_dto.CheckEmailUserDTO"
+                        "$ref": "#/definitions/dto.CheckEmailUserDTO"
                     }
                 }
             }
         },
-        "nrs-authentication_internal_dto.CheckEmailUserDTO": {
+        "dto.CheckEmailUserDTO": {
             "type": "object",
             "properties": {
                 "attributes": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/nrs-authentication_internal_dto.AttributeTypeSwagger"
+                        "$ref": "#/definitions/dto.AttributeTypeSwagger"
                     }
                 },
                 "enabled": {
@@ -479,7 +488,7 @@ const docTemplate = `{
                 "mfaOptions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/nrs-authentication_internal_dto.MFAOptionTypeSwagger"
+                        "$ref": "#/definitions/dto.MFAOptionTypeSwagger"
                     }
                 },
                 "userCreateDate": {
@@ -496,7 +505,7 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.CreateInviteRequest": {
+        "dto.CreateInviteRequest": {
             "type": "object",
             "required": [
                 "organizationId",
@@ -505,6 +514,9 @@ const docTemplate = `{
                 "targetEmail"
             ],
             "properties": {
+                "expiresAt": {
+                    "type": "string"
+                },
                 "organizationId": {
                     "type": "string",
                     "maxLength": 100,
@@ -525,13 +537,16 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.InviteResponse": {
+        "dto.InviteResponse": {
             "type": "object",
             "properties": {
                 "accepted": {
                     "type": "boolean"
                 },
                 "createdAt": {
+                    "type": "string"
+                },
+                "expiresAt": {
                     "type": "string"
                 },
                 "id": {
@@ -557,7 +572,7 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.MFAOptionTypeSwagger": {
+        "dto.MFAOptionTypeSwagger": {
             "type": "object",
             "properties": {
                 "attributeName": {
@@ -568,10 +583,10 @@ const docTemplate = `{
                 }
             }
         },
-        "nrs-authentication_internal_dto.MetadataSwagger": {
+        "dto.MetadataSwagger": {
             "type": "object"
         },
-        "nrs-authentication_internal_dto.UserOrganizationMappingResponse": {
+        "dto.UserOrganizationMappingResponse": {
             "type": "object",
             "properties": {
                 "active": {
@@ -587,6 +602,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "organizationName": {
+                    "type": "string"
+                },
+                "organizationType": {
                     "type": "string"
                 },
                 "roleName": {

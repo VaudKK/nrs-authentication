@@ -48,8 +48,9 @@ type inviteTemplateData struct {
 }
 
 type organizationRecord struct {
-	ID   string `gorm:"column:id"`
-	Name string `gorm:"column:name"`
+	ID               string `gorm:"column:id"`
+	Name             string `gorm:"column:name"`
+	OrganizationType string `gorm:"column:organization_type"`
 }
 
 func NewInviteService(cfg *config.Config, log *logrus.Logger, awsService AwsService) (InviteService, error) {
@@ -223,6 +224,11 @@ func (s *inviteService) AttachRoleByInviteID(inviteID string) (dto.AttachRoleRes
 		return dto.AttachRoleResponse{Success: false, Message: "invited user not found"}, errors.New("invited user not found")
 	}
 
+	organization, err := s.findOrganizationByID(invite.OrganizationID)
+	if err != nil {
+		return dto.AttachRoleResponse{Success: false, Message: "organization lookup failed"}, err
+	}
+
 	response, err := s.awsService.AttachRole(dto.AttachRoleRequest{
 		Username:  strings.TrimSpace(*user.Users[0].Username),
 		GroupName: invite.RoleName,
@@ -231,7 +237,7 @@ func (s *inviteService) AttachRoleByInviteID(inviteID string) (dto.AttachRoleRes
 		return response, err
 	}
 
-	if err := s.upsertUserOrganizationMapping(invite); err != nil {
+	if err := s.upsertUserOrganizationMapping(invite, organization); err != nil {
 		s.log.WithError(err).Error("Error while saving user organization mapping")
 		return dto.AttachRoleResponse{
 			Success: false,
@@ -266,7 +272,7 @@ func (s *inviteService) buildInviteJoinLink(inviteID string) string {
 func (s *inviteService) findOrganizationByID(organizationID string) (organizationRecord, error) {
 	var organization organizationRecord
 	err := s.db.Table("organizations").
-		Select("id", "name").
+		Select("id", "name", "organization_type").
 		Where("id = ?", strings.TrimSpace(organizationID)).
 		First(&organization).Error
 	if err != nil {
@@ -315,6 +321,7 @@ func mapUserOrganizationMapping(mapping model.UserOrganizationMapping) dto.UserO
 		UserEmail:        mapping.UserEmail,
 		OrganizationID:   mapping.OrganizationID,
 		OrganizationName: mapping.OrganizationName,
+		OrganizationType: mapping.OrganizationType,
 		RoleName:         mapping.RoleName,
 		Active:           mapping.Active,
 		CreatedAt:        mapping.CreatedAt,
@@ -322,9 +329,13 @@ func mapUserOrganizationMapping(mapping model.UserOrganizationMapping) dto.UserO
 	}
 }
 
-func (s *inviteService) upsertUserOrganizationMapping(invite model.Invite) error {
+func (s *inviteService) upsertUserOrganizationMapping(invite model.Invite, organization organizationRecord) error {
 	userEmail := strings.TrimSpace(strings.ToLower(invite.TargetEmail))
 	organizationID := strings.TrimSpace(invite.OrganizationID)
+	organizationName := strings.TrimSpace(organization.Name)
+	if organizationName == "" {
+		organizationName = strings.TrimSpace(invite.OrganizationName)
+	}
 
 	var mapping model.UserOrganizationMapping
 	err := s.db.Where("user_email = ? AND organization_id = ?", userEmail, organizationID).First(&mapping).Error
@@ -333,7 +344,8 @@ func (s *inviteService) upsertUserOrganizationMapping(invite model.Invite) error
 			mapping = model.UserOrganizationMapping{
 				UserEmail:        userEmail,
 				OrganizationID:   organizationID,
-				OrganizationName: strings.TrimSpace(invite.OrganizationName),
+				OrganizationName: organizationName,
+				OrganizationType: strings.TrimSpace(organization.OrganizationType),
 				RoleName:         strings.TrimSpace(invite.RoleName),
 				Active:           true,
 			}
@@ -343,7 +355,8 @@ func (s *inviteService) upsertUserOrganizationMapping(invite model.Invite) error
 		return err
 	}
 
-	mapping.OrganizationName = strings.TrimSpace(invite.OrganizationName)
+	mapping.OrganizationName = organizationName
+	mapping.OrganizationType = strings.TrimSpace(organization.OrganizationType)
 	mapping.RoleName = strings.TrimSpace(invite.RoleName)
 	mapping.Active = true
 

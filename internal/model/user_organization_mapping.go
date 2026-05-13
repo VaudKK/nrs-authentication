@@ -12,6 +12,7 @@ type UserOrganizationMapping struct {
 	UserEmail        string    `gorm:"size:255;not null;index:idx_user_org,unique" json:"userEmail"`
 	OrganizationID   string    `gorm:"size:100;not null;index:idx_user_org,unique" json:"organizationId"`
 	OrganizationName string    `gorm:"size:255;not null" json:"organizationName"`
+	OrganizationType string    `gorm:"size:100" json:"organizationType"`
 	RoleName         string    `gorm:"size:100;not null" json:"roleName"`
 	Active           bool      `gorm:"not null;default:true" json:"active"`
 	CreatedAt        time.Time `json:"createdAt"`

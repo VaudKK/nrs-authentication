@@ -1,49 +1,51 @@
 basePath: /api/v1/auth
 definitions:
-  nrs-authentication_internal_dto.AcceptInviteResponse:
+  dto.AcceptInviteResponse:
     properties:
+      email:
+        type: string
       invite: {}
       message:
         type: string
       success:
         type: boolean
     type: object
-  nrs-authentication_internal_dto.AttachRoleResponse:
+  dto.AttachRoleResponse:
     properties:
       message:
         type: string
       success:
         type: boolean
     type: object
-  nrs-authentication_internal_dto.AttributeTypeSwagger:
+  dto.AttributeTypeSwagger:
     properties:
       name:
         type: string
       value:
         type: string
     type: object
-  nrs-authentication_internal_dto.CheckEmailResponse:
+  dto.CheckEmailResponse:
     properties:
       paginationToken:
         type: string
       resultMetadata:
-        $ref: '#/definitions/nrs-authentication_internal_dto.MetadataSwagger'
+        $ref: '#/definitions/dto.MetadataSwagger'
       users:
         items:
-          $ref: '#/definitions/nrs-authentication_internal_dto.CheckEmailUserDTO'
+          $ref: '#/definitions/dto.CheckEmailUserDTO'
         type: array
     type: object
-  nrs-authentication_internal_dto.CheckEmailUserDTO:
+  dto.CheckEmailUserDTO:
     properties:
       attributes:
         items:
-          $ref: '#/definitions/nrs-authentication_internal_dto.AttributeTypeSwagger'
+          $ref: '#/definitions/dto.AttributeTypeSwagger'
         type: array
       enabled:
         type: boolean
       mfaOptions:
         items:
-          $ref: '#/definitions/nrs-authentication_internal_dto.MFAOptionTypeSwagger'
+          $ref: '#/definitions/dto.MFAOptionTypeSwagger'
         type: array
       userCreateDate:
         type: string
@@ -54,8 +56,10 @@ definitions:
       username:
         type: string
     type: object
-  nrs-authentication_internal_dto.CreateInviteRequest:
+  dto.CreateInviteRequest:
     properties:
+      expiresAt:
+        type: string
       organizationId:
         maxLength: 100
         minLength: 1
@@ -76,11 +80,13 @@ definitions:
     - roleName
     - targetEmail
     type: object
-  nrs-authentication_internal_dto.InviteResponse:
+  dto.InviteResponse:
     properties:
       accepted:
         type: boolean
       createdAt:
+        type: string
+      expiresAt:
         type: string
       id:
         type: string
@@ -97,16 +103,16 @@ definitions:
       updatedAt:
         type: string
     type: object
-  nrs-authentication_internal_dto.MFAOptionTypeSwagger:
+  dto.MFAOptionTypeSwagger:
     properties:
       attributeName:
         type: string
       deliveryMedium:
         type: string
     type: object
-  nrs-authentication_internal_dto.MetadataSwagger:
+  dto.MetadataSwagger:
     type: object
-  nrs-authentication_internal_dto.UserOrganizationMappingResponse:
+  dto.UserOrganizationMappingResponse:
     properties:
       active:
         type: boolean
@@ -117,6 +123,8 @@ definitions:
       organizationId:
         type: string
       organizationName:
+        type: string
+      organizationType:
         type: string
       roleName:
         type: string
@@ -149,7 +157,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.CheckEmailResponse'
+            $ref: '#/definitions/dto.CheckEmailResponse'
         "400":
           description: Bad Request
           schema:
@@ -175,19 +183,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse'
+            $ref: '#/definitions/dto.AcceptInviteResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse'
+            $ref: '#/definitions/dto.AcceptInviteResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse'
+            $ref: '#/definitions/dto.AcceptInviteResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AcceptInviteResponse'
+            $ref: '#/definitions/dto.AcceptInviteResponse'
+        "410":
+          description: Gone
+          schema:
+            $ref: '#/definitions/dto.AcceptInviteResponse'
       summary: Accept invite
       tags:
       - invites
@@ -208,19 +220,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
+            $ref: '#/definitions/dto.AttachRoleResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
+            $ref: '#/definitions/dto.AttachRoleResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
+            $ref: '#/definitions/dto.AttachRoleResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.AttachRoleResponse'
+            $ref: '#/definitions/dto.AttachRoleResponse'
       summary: Attach role from invite
       tags:
       - invites
@@ -240,14 +252,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/nrs-authentication_internal_dto.CreateInviteRequest'
+          $ref: '#/definitions/dto.CreateInviteRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/nrs-authentication_internal_dto.InviteResponse'
+            $ref: '#/definitions/dto.InviteResponse'
         "400":
           description: Bad Request
           schema:
@@ -291,7 +303,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/nrs-authentication_internal_dto.InviteResponse'
+              $ref: '#/definitions/dto.InviteResponse'
             type: array
         "400":
           description: Bad Request
@@ -331,7 +343,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/nrs-authentication_internal_dto.UserOrganizationMappingResponse'
+              $ref: '#/definitions/dto.UserOrganizationMappingResponse'
             type: array
         "400":
           description: Bad Request
@@ -371,7 +383,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/nrs-authentication_internal_dto.UserOrganizationMappingResponse'
+              $ref: '#/definitions/dto.UserOrganizationMappingResponse'
             type: array
         "400":
           description: Bad Request
